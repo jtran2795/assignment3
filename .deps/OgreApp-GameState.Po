@@ -1,0 +1,5 @@
+OgreApp-GameState.o: GameState.cpp /usr/include/stdc-predef.h GameState.h
+
+/usr/include/stdc-predef.h:
+
+GameState.h:
