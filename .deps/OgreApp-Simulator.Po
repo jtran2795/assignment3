@@ -1095,7 +1095,8 @@ OgreApp-Simulator.o: Simulator.cpp /usr/include/stdc-predef.h Simulator.h \
  /usr/include/SDL/SDL_joystick.h /usr/include/SDL/SDL_quit.h \
  /usr/include/SDL/SDL_loadso.h /usr/include/SDL/SDL_timer.h \
  /usr/include/SDL/SDL_version.h /usr/include/SDL/SDL_mixer.h \
- /usr/include/SDL/SDL_types.h /usr/include/ois/OISEvents.h \
+ /usr/include/SDL/SDL_types.h NetManager.h /usr/include/SDL/SDL_net.h \
+ /usr/include/SDL/SDL.h /usr/include/ois/OISEvents.h \
  /usr/include/ois/OISInputManager.h /usr/include/ois/OISKeyboard.h \
  /usr/include/ois/OISMouse.h SdkTrays.h SdkCameraMan.h
 
@@ -3654,6 +3655,12 @@ SdkCameraMan.h:
 /usr/include/SDL/SDL_mixer.h:
 
 /usr/include/SDL/SDL_types.h:
+
+NetManager.h:
+
+/usr/include/SDL/SDL_net.h:
+
+/usr/include/SDL/SDL.h:
 
 /usr/include/ois/OISEvents.h:
 
