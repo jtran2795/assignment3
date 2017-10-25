@@ -112,12 +112,13 @@ am_OgreApp_OBJECTS = OgreApp-BaseApplication.$(OBJEXT) \
 	OgreApp-TutorialApplication.$(OBJEXT) \
 	OgreApp-GameObject.$(OBJEXT) OgreApp-Simulator.$(OBJEXT) \
 	OgreApp-OgreMotionState.$(OBJEXT) \
-	OgreApp-SoundSystem.$(OBJEXT) OgreApp-GameState.$(OBJEXT)
+	OgreApp-SoundSystem.$(OBJEXT) OgreApp-GameState.$(OBJEXT) \
+	OgreApp-NetManager.$(OBJEXT)
 OgreApp_OBJECTS = $(am_OgreApp_OBJECTS)
 am__DEPENDENCIES_1 =
 OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
@@ -208,13 +209,13 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing aclocal-1.15
+ACLOCAL = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing autoconf
-AUTOHEADER = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing autoheader
-AUTOMAKE = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing automake-1.15
+AUTOCONF = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing autoconf
+AUTOHEADER = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing autoheader
+AUTOMAKE = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing automake-1.15
 AWK = gawk
 BULLET_CFLAGS = 
 BULLET_LIBS = 
@@ -258,7 +259,7 @@ LIPO =
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
-MAKEINFO = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing makeinfo
+MAKEINFO = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -294,10 +295,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.1
-abs_builddir = /v/filer5b/v38q001/jtr/Downloads/a3
-abs_srcdir = /v/filer5b/v38q001/jtr/Downloads/a3
-abs_top_builddir = /v/filer5b/v38q001/jtr/Downloads/a3
-abs_top_srcdir = /v/filer5b/v38q001/jtr/Downloads/a3
+abs_builddir = /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3
+abs_srcdir = /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3
+abs_top_builddir = /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3
+abs_top_srcdir = /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -329,7 +330,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/install-sh
+install_sh = ${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -353,11 +354,11 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 ACLOCAL_AMFLAGS = -I m4
-noinst_HEADERS = BaseApplication.h TutorialApplication.h GameObject.h Simulator.h OgreMotionState.h SoundSystem.h GameState.h
+noinst_HEADERS = BaseApplication.h TutorialApplication.h GameObject.h Simulator.h OgreMotionState.h SoundSystem.h GameState.h NetManager.h
 OgreApp_CPPFLAGS = -I$(top_srcdir)
-OgreApp_SOURCES = BaseApplication.cpp TutorialApplication.cpp GameObject.cpp Simulator.cpp OgreMotionState.cpp SoundSystem.cpp GameState.cpp
-OgreApp_CXXFLAGS = -I/usr/include/OGRE -pthread $(OIS_CFLAGS) $(bullet_CFLAGS) $(SDL_CFLAGS) $(SDL_mixer_CFLAGS) $(SDLnet_CFLAGS) $(CEGUI_CFLAGS)
-OgreApp_LDADD = -L/usr/lib/x86_64-linux-gnu/OGRE-1.9.0 -lOgreMain -lpthread $(OIS_LIBS) $(bullet_LIBS) $(SDL_LIBS) $(SDL_mixer_LIBS)  $(SDLnet_LIBS) $(CEGUI_LIBS)
+OgreApp_SOURCES = BaseApplication.cpp TutorialApplication.cpp GameObject.cpp Simulator.cpp OgreMotionState.cpp SoundSystem.cpp GameState.cpp NetManager.cpp
+OgreApp_CXXFLAGS = -I/usr/include/OGRE -pthread $(OIS_CFLAGS) $(bullet_CFLAGS) $(SDL_CFLAGS) $(SDL_mixer_CFLAGS) $(SDL_net_CFLAGS) $(CEGUI_CFLAGS)
+OgreApp_LDADD = -L/usr/lib/x86_64-linux-gnu/OGRE-1.9.0 -lOgreMain -lpthread $(OIS_LIBS) $(bullet_LIBS) $(SDL_LIBS) $(SDL_mixer_LIBS)  $(SDL_net_LIBS) $(CEGUI_LIBS)
 OgreApp_LDFLAGS = -lOgreOverlay -lboost_system -R/lusr/opt/cegui-0.8.7
 EXTRA_DIST = buildit makeit
 AUTOMAKE_OPTIONS = foreign
@@ -477,6 +478,7 @@ distclean-compile:
 include ./$(DEPDIR)/OgreApp-BaseApplication.Po
 include ./$(DEPDIR)/OgreApp-GameObject.Po
 include ./$(DEPDIR)/OgreApp-GameState.Po
+include ./$(DEPDIR)/OgreApp-NetManager.Po
 include ./$(DEPDIR)/OgreApp-OgreMotionState.Po
 include ./$(DEPDIR)/OgreApp-Simulator.Po
 include ./$(DEPDIR)/OgreApp-SoundSystem.Po
@@ -600,6 +602,20 @@ OgreApp-GameState.obj: GameState.cpp
 #	$(AM_V_CXX)source='GameState.cpp' object='OgreApp-GameState.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-GameState.obj `if test -f 'GameState.cpp'; then $(CYGPATH_W) 'GameState.cpp'; else $(CYGPATH_W) '$(srcdir)/GameState.cpp'; fi`
+
+OgreApp-NetManager.o: NetManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.o -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+
+OgreApp-NetManager.obj: NetManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

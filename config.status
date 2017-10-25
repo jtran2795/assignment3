@@ -437,7 +437,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/v/filer5b/v38q001/jtr/Downloads/a3'
+ac_pwd='/v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='/bin/mkdir -p'
@@ -679,7 +679,7 @@ finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
 finish_eval=''
 hardcode_into_libs='yes'
 sys_lib_search_path_spec='/usr/lib/gcc/x86_64-linux-gnu/5 /usr/lib/x86_64-linux-gnu /usr/lib /lib/x86_64-linux-gnu /lib '
-configure_time_dlsearch_path='/lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/nvidia-375 /usr/lib32/nvidia-375 /usr/lib/nvidia-375 /usr/lib32/nvidia-375 /lib32 /usr/lib32 '
+configure_time_dlsearch_path='/lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/nvidia-384 /usr/lib32/nvidia-384 /usr/lib/nvidia-384 /usr/lib32/nvidia-384 /lib32 /usr/lib32 /libx32 /usr/libx32 '
 configure_time_lt_sys_library_path=''
 hardcode_action='immediate'
 enable_dlopen='unknown'
@@ -967,12 +967,12 @@ S["mkdir_p"]="$(MKDIR_P)"
 S["MKDIR_P"]="/bin/mkdir -p"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]="strip"
-S["install_sh"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/install-sh"
-S["MAKEINFO"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing makeinfo"
-S["AUTOHEADER"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing autoheader"
-S["AUTOMAKE"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing automake-1.15"
-S["AUTOCONF"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing autoconf"
-S["ACLOCAL"]="${SHELL} /v/filer5b/v38q001/jtr/Downloads/a3/missing aclocal-1.15"
+S["install_sh"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/install-sh"
+S["MAKEINFO"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing makeinfo"
+S["AUTOHEADER"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing autoheader"
+S["AUTOMAKE"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing automake-1.15"
+S["AUTOCONF"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing autoconf"
+S["ACLOCAL"]="${SHELL} /v/filer5b/v38q001/victor40/GameTech/assign3/cs354assignment3/missing aclocal-1.15"
 S["VERSION"]="0.1"
 S["PACKAGE"]="SampleApp"
 S["CYGPATH_W"]="echo"

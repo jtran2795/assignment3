@@ -34,6 +34,7 @@ http://www.ogre3d.org/wiki/
 
 #include "NetManager.h"
 
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #  include <OIS/OISEvents.h>
 #  include <OIS/OISInputManager.h>

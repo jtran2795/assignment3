@@ -39,7 +39,9 @@ protected:
   SoundSystem *sound;
 	Simulator *sim;
   GameState *state;
+  NetManager *netm;
     virtual void createScene(void);
+    void gameLoop(void);
     void initSDL();
     void quitSDL();
     void initCEGUI();
@@ -55,6 +57,9 @@ protected:
   void resetBall(Ogre::SceneNode *sn, btRigidBody *rb);
   void resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb);
   void resetGame();
+  void netMenu(void);
+  void initHost(void);
+  void lobbyMenu(void);
 };
 
 //---------------------------------------------------------------------------

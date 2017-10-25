@@ -88,10 +88,42 @@ void TutorialApplication::createScene(void)
 	sim = new Simulator();
 	state = new GameState();
 
+	CEGUI::WindowManager &mwmgr = CEGUI::WindowManager::getSingleton();
+	CEGUI::Window *menu = mwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
+	CEGUI::Window *start = mwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *startMulti = mwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+
+	start->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	start->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.4, 0)));
+
+	startMulti->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	startMulti->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
+
+	start->setText("Start Game");
+	menu->addChild(start);
+
+	startMulti->setText("Play Online");
+	menu->addChild(startMulti);
+
+	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(menu);
+
+	start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::gameLoop, this));
+
+	startMulti->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::netMenu, this));
+
+
+
+	
+	
+    // Create your scene here :)
+}
+
+void TutorialApplication::gameLoop(void) {
 	unsigned int iframes;
 	float rX , rY, rZ;
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+    mSceneMgr -> setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
     
 	Ogre::Light* light1 = mSceneMgr->createLight("light1");
@@ -143,7 +175,6 @@ void TutorialApplication::createScene(void)
 
 
 	Ogre::Entity* ball = mSceneMgr->createEntity("ball", Ogre::SceneManager::PT_SPHERE);
-	mSceneMgr -> setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 	ball->setMaterialName("Glass");
 
 	btCollisionShape *ballShape = new btSphereShape(btScalar(50.0f));
@@ -307,8 +338,50 @@ void TutorialApplication::createScene(void)
 				break;
 			}
 	}
+}
+
+void TutorialApplication::netMenu() {
+
+	netm = new NetManager();
+	netm -> initNetManager();
+	netm -> addNetworkInfo();
+	netm -> startServer();
+
+	CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
+	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
+	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+
+	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.4, 0)));
+
+	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
+
+	host->setText("Host Game");
+	nMenu->addChild(host);
+
+	join->setText("Join Game");
+	nMenu->addChild(join);
+
+	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
+
+	host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::initHost, this));
+
+	join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::lobbyMenu, this));
+
+}
+
+void TutorialApplication::initHost() {
 	
-    // Create your scene here :)
+	std::cout << netm -> multiPlayerInit(8) << "\n";
+}
+
+void TutorialApplication::lobbyMenu() {
+
+	netm -> scanForActivity();
+	CEGUI::WindowManager &lwmgr = CEGUI::WindowManager::getSingleton();
+
 }
 
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
@@ -546,6 +619,11 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 //---------------------------------------------------------------------------
 bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 {
+	if (arg.key == OIS::KC_ESCAPE) {
+		quitSDL();
+    	mShutDown = true;
+  	}
+
 	std:: deque<GameObject*> objList = sim -> getObjList();
 	GameObject* paddle = NULL;
 	for(int i = 0; i < objList.size();i++) 
@@ -594,10 +672,6 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 		//  << paddle -> getBody() -> getOrientation().getAxis().getY() << " "
 		//  << paddle -> getBody() -> getOrientation().getAxis().getZ() << "\n";
 	}
-	if (arg.key == OIS::KC_ESCAPE) {
-		quitSDL();
-    	mShutDown = true;
-  	}
   	if (arg.key == OIS::KC_SPACE && (rotate == 0 || rotate == 2))
 	{
 		paddle -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
