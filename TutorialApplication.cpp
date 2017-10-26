@@ -374,12 +374,12 @@ void TutorialApplication::netMenu() {
 
 void TutorialApplication::initHost() {
 	
-	std::cout << netm -> multiPlayerInit(8) << "\n";
-}
+	std::cout << netm -> multiPlayerInit() << "\n";
 
+}
 void TutorialApplication::lobbyMenu() {
 
-	netm -> scanForActivity();
+	std::cout << netm -> scanForActivity() << "\n";
 	CEGUI::WindowManager &lwmgr = CEGUI::WindowManager::getSingleton();
 
 }
