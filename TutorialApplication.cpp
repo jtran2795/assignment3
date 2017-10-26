@@ -346,7 +346,6 @@ void TutorialApplication::netMenu() {
 	netm -> initNetManager();
 	netm -> addNetworkInfo();
 	netm -> startServer();
-
 	CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
 	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
@@ -376,10 +375,29 @@ void TutorialApplication::initHost() {
 	
 	std::cout << netm -> multiPlayerInit() << "\n";
 
+
 }
 void TutorialApplication::lobbyMenu() {
+	//std::cout << netm -> getProtocol() << " " << netm -> getHostname() << " " << netm ->  getPort() << " \n";
+	std::string ip;
+	if(netm -> pollForActivity(5000))
+	{
+		//std::cout << netm -> udpClientData.size() << "\n";
+		for(int i = 0; i < 10; i++)
+		{
+			if(strcmp(netm -> udpServerData[i].output,"") != 1)
+			{
+				ip = std::string(netm -> udpServerData[i].output, 128);
+				ip = ip.substr(STR_OPEN.length());
+				netm -> joinMultiPlayer(netm -> udpServerData[i].output);
+				//std::cout << ip << "\n";
+				break;
+			}
+		}
 
-	std::cout << netm -> scanForActivity() << "\n";
+	}
+
+	//std::cout << netm -> joinMultiPlayer("TG_SERVER_OPEN128.83.139.166") << "\n";
 	CEGUI::WindowManager &lwmgr = CEGUI::WindowManager::getSingleton();
 
 }
