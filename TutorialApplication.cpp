@@ -350,6 +350,7 @@ void TutorialApplication::netMenu() {
 	CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
 	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *broadcast = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
@@ -358,11 +359,17 @@ void TutorialApplication::netMenu() {
 	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
 
+	broadcast->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	broadcast->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+
 	host->setText("Host Game");
 	nMenu->addChild(host);
 
 	join->setText("Join Game");
 	nMenu->addChild(join);
+
+	broadcast->setText("UDP Broadcast");
+	nMenu->addChild(broadcast);
 
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
 
@@ -370,11 +377,21 @@ void TutorialApplication::netMenu() {
 
 	join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::lobbyMenu, this));
 
+	broadcast->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::broadcastUDP, this));
+
 }
 
 void TutorialApplication::initHost() {
-	
-	std::cout << netm -> multiPlayerInit() << "\n";
+
+	std::cout << netm -> multiPlayerInit(1) << "\n";
+	int count = 0;
+	while(!(netm -> pollForActivity()) && count < 3) {
+		netm -> broadcastUDPInvitation();
+		count++;
+	}
+
+	std::cout << "Connection established" << "\n";
+
 
 }
 void TutorialApplication::lobbyMenu() {
@@ -382,6 +399,11 @@ void TutorialApplication::lobbyMenu() {
 	std::cout << netm -> scanForActivity() << "\n";
 	CEGUI::WindowManager &lwmgr = CEGUI::WindowManager::getSingleton();
 
+}
+
+void TutorialApplication::broadcastUDP() {
+	std::cout << netm -> getPort() << "\n";
+	netm -> broadcastUDPInvitation(1);
 }
 
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)

@@ -60,6 +60,7 @@ protected:
   void netMenu(void);
   void initHost(void);
   void lobbyMenu(void);
+  void broadcastUDP(void);
 };
 
 //---------------------------------------------------------------------------
