@@ -61,6 +61,8 @@ protected:
   void initHost(void);
   void lobbyMenu(void);
   void broadcastUDP(void);
+  void sendMsg(void);
+  void recvMsg(void);
 };
 
 //---------------------------------------------------------------------------

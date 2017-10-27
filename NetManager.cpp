@@ -726,8 +726,6 @@ bool NetManager::broadcastUDPInvitation(int maskDepth) {
   UDPpacket *packet;
 
   SDLNet_ResolveHost(&addr, getMaskedIPstring(maskDepth).c_str(), PORT_DEFAULT);
-  std::cout << getIPstring() << "\n";
-  std::cout << getMaskedIPstring(maskDepth) << "\n";
   broadcast << STR_OPEN << getIPstring();
   data = broadcast.str();
   packet = craftUDPpacket(data.c_str(), data.length());

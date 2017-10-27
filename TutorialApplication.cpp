@@ -353,6 +353,9 @@ void TutorialApplication::netMenu() {
 	CEGUI::Window *broadcast = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 
+	CEGUI::Window *send = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *recv = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.4, 0)));
 
@@ -361,6 +364,12 @@ void TutorialApplication::netMenu() {
 
 	broadcast->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	broadcast->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+
+	send->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	send->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
+
+	recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
 
 	host->setText("Host Game");
 	nMenu->addChild(host);
@@ -371,6 +380,12 @@ void TutorialApplication::netMenu() {
 	broadcast->setText("UDP Broadcast");
 	nMenu->addChild(broadcast);
 
+	send->setText("Send Msg");
+	nMenu->addChild(send);
+
+	recv->setText("Receive Msg");
+	nMenu->addChild(recv);
+
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
 
 	host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::initHost, this));
@@ -379,18 +394,30 @@ void TutorialApplication::netMenu() {
 
 	broadcast->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::broadcastUDP, this));
 
+	send->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::sendMsg, this));
+
+	recv->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::recvMsg, this));
+
 }
 
 void TutorialApplication::initHost() {
 
-	std::cout << netm -> multiPlayerInit(1) << "\n";
+	netm -> multiPlayerInit(1);
+	// if(netm -> pollForActivity(1000)) {
+	// 	std::cout << "Connection Established" << "\n";
+	// }
 	int count = 0;
-	while(!(netm -> pollForActivity()) && count < 3) {
-		netm -> broadcastUDPInvitation();
+	while((netm -> pollForActivity(1000)) == 0 && count < 10) {
 		count++;
 	}
+	if(count < 10) {
+		std::cout << netm -> getClients() << "\n";
+	}
+	netm -> pollForActivity(1000);
+	std::cout << netm -> getClients() << "\n";
 
-	std::cout << "Connection established" << "\n";
+
+
 
 
 }
@@ -404,6 +431,20 @@ void TutorialApplication::lobbyMenu() {
 void TutorialApplication::broadcastUDP() {
 	std::cout << netm -> getPort() << "\n";
 	netm -> broadcastUDPInvitation(1);
+}
+
+void TutorialApplication::sendMsg() {
+	const char* buf = "Testing";
+	netm -> messageClients(PROTOCOL_ALL, buf, strlen(buf));
+}
+
+void TutorialApplication::recvMsg() {
+	if(netm -> scanForActivity()) {
+		std::cout << "Got Message" << "\n";
+	}
+	else {
+		std::cout << "No Messages Received" << "\n";
+	}
 }
 
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
