@@ -22,7 +22,7 @@ http://www.ogre3d.org/wiki/
 Mix_Chunk *bell = NULL;
 int rotate = 0;
 int cooldown = 0;
-
+bool single = false; 
 CEGUI::Window *sheet;
 CEGUI::Window *score;
 CEGUI::Window *hiscore;
@@ -111,7 +111,17 @@ void TutorialApplication::createScene(void)
 
 	startMulti->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::netMenu, this));
 
-
+	while(true)
+	{
+		if(single)
+		{
+			break;
+		}
+		if(!mRoot->renderOneFrame()) 
+		{
+			break;
+		}
+	}
 
 	
 	
@@ -119,6 +129,7 @@ void TutorialApplication::createScene(void)
 }
 
 void TutorialApplication::gameLoop(void) {
+	single = true;
 	unsigned int iframes;
 	float rX , rY, rZ;
 
@@ -350,6 +361,8 @@ void TutorialApplication::netMenu() {
 	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *msg = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *check = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.4, 0)));
@@ -357,11 +370,24 @@ void TutorialApplication::netMenu() {
 	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
 
+	msg->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	msg->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+
+	check->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	check->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
+
 	host->setText("Host Game");
 	nMenu->addChild(host);
 
 	join->setText("Join Game");
 	nMenu->addChild(join);
+
+	msg->setText("Send Messsage");
+	nMenu->addChild(msg);
+
+	check->setText("Check Messsage");
+	nMenu->addChild(check);
+
 
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
 
@@ -369,14 +395,28 @@ void TutorialApplication::netMenu() {
 
 	join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::lobbyMenu, this));
 
+	msg->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::sendMessage, this));
+
+	check->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::checkMessages, this));
 }
 
 void TutorialApplication::initHost() {
-	
 	std::cout << netm -> multiPlayerInit() << "\n";
-
-
 }
+
+void TutorialApplication::checkMessages(){
+	if(netm -> pollForActivity(0))
+	{
+		std::cout << "Message Recieved" << "\n";
+			std::cout << netm -> tcpServerData.output << "\n";
+	}
+
+	// for(int i = 0; i < netm -> tcpServerData.size(); i++)
+	// {
+	// 	std::cout << netm -> tcpServerData[i] -> output << "\n";
+	// }
+}
+
 void TutorialApplication::lobbyMenu() {
 	//std::cout << netm -> getProtocol() << " " << netm -> getHostname() << " " << netm ->  getPort() << " \n";
 	std::string ip;
@@ -387,9 +427,10 @@ void TutorialApplication::lobbyMenu() {
 		{
 			if(strcmp(netm -> udpServerData[i].output,"") != 1)
 			{
-				ip = std::string(netm -> udpServerData[i].output, 128);
-				ip = ip.substr(STR_OPEN.length());
+				//ip = std::string(netm -> udpServerData[i].output, 128);
+				//ip = ip.substr(STR_OPEN.length());
 				netm -> joinMultiPlayer(netm -> udpServerData[i].output);
+				sendMessage();
 				//std::cout << ip << "\n";
 				break;
 			}
@@ -401,7 +442,10 @@ void TutorialApplication::lobbyMenu() {
 	CEGUI::WindowManager &lwmgr = CEGUI::WindowManager::getSingleton();
 
 }
-
+void TutorialApplication::sendMessage(){
+	const char* buf = "Testing";
+	netm-> messageServer(PROTOCOL_ALL, buf, strlen(buf));
+}
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 {
 	btTransform tr;
@@ -457,7 +501,7 @@ void TutorialApplication::resetGame(){
 }
 void TutorialApplication::tickCallBack(btDynamicsWorld *world, btScalar timeStep) 
 {
-	
+		
 
 	btRigidBody* paddle;
 	btCollisionObjectArray coArray = world -> getCollisionObjectArray();

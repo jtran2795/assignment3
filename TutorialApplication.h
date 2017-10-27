@@ -60,6 +60,8 @@ protected:
   void netMenu(void);
   void initHost(void);
   void lobbyMenu(void);
+  void checkMessages();
+  void sendMessage();
 };
 
 //---------------------------------------------------------------------------
