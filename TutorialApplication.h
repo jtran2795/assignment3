@@ -42,6 +42,7 @@ protected:
   NetManager *netm;
     virtual void createScene(void);
     void gameLoop(void);
+    void gameLoopMP(void);
     void initSDL();
     void quitSDL();
     void initCEGUI();
