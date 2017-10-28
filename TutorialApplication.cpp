@@ -47,6 +47,7 @@ void TutorialApplication::initSDL()
 void TutorialApplication::quitSDL()
 {
 	sound -> quitSound();
+	delete sound;
 }
 
 void TutorialApplication::initCEGUI() {
@@ -107,7 +108,7 @@ void TutorialApplication::createScene(void)
 
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(menu);
 
-	start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::gameLoop, this));
+	start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::gameLoopMP, this));
 
 	startMulti->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::netMenu, this));
 
@@ -351,6 +352,258 @@ void TutorialApplication::gameLoop(void) {
 	}
 }
 
+void TutorialApplication::gameLoopMP(void) {
+	unsigned int iframes;
+	float rX , rY, rZ;
+
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
+    mSceneMgr -> setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+
+    
+	Ogre::Light* light1 = mSceneMgr->createLight("light1");
+    light1->setPosition(0,100,0);
+    light1->setCastShadows(true);
+
+	// Ogre::Light* light2 = mSceneMgr->createLight("light2");
+ //    light2->setPosition(50,30,50);
+	// light2->setCastShadows(true);
+
+	createWalls();
+
+	Ogre::Entity* floor_plane = mSceneMgr->createEntity("floor");
+	Ogre::Entity* north_plane = mSceneMgr->createEntity("north", Ogre::SceneManager::PT_CUBE);
+
+	floor_plane->setMaterialName("WoodPallet");
+	//Ogre::SceneNode* floor_plane_node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	//floor_plane_node->attachObject(floor_plane);
+
+
+	//Attatch floor to bullet
+
+	btTransform floorTransform;
+	floorTransform.setIdentity();
+	floorTransform.setOrigin(btVector3(0,-50,0)); //Change later.
+
+	btScalar floorMass(0.0);
+	btVector3 localFloorInertia(0,0,0);
+
+	GameObject *newFloor = new GameObject("newFloor", mSceneMgr, sim);
+	btCollisionShape *floorShape = new btBoxShape(btVector3(btScalar(50.0), btScalar(0), btScalar(50.0)));
+
+	newFloor -> buildObject(floor_plane, floorShape, floorMass, floorTransform, localFloorInertia);
+	newFloor -> getBody() -> setRestitution(0.95f);
+
+	north_plane->setMaterialName("Examples/Rockwall");
+	//Ogre::SceneNode* north_plane_node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	//north_plane_node->attachObject(north_plane);
+
+	GameObject* newWall = new GameObject("newWall", mSceneMgr, sim);
+	btCollisionShape *wallShape = new btBoxShape(btVector3(btScalar(50.0), btScalar(50.0), btScalar(50.0)));
+
+	floorTransform.setOrigin(btVector3(0,-50,50));
+
+	newWall -> buildObject(north_plane, wallShape, floorMass, floorTransform, localFloorInertia);
+	newWall -> getBody() -> setRestitution(0.95f);
+	newWall -> setScale(Ogre::Vector3(1.0f,0.2f,0.0f));
+
+
+	Ogre::Entity* floor_plane2 = mSceneMgr->createEntity("floor2");
+	floor_plane2->setMaterialName("WoodPallet");
+	GameObject *newFloor2 = new GameObject("newFloor2", mSceneMgr, sim);
+	btCollisionShape *floorShape2 = new btBoxShape(btVector3(btScalar(50.0), btScalar(0), btScalar(50.0)));
+
+	btTransform floorTransform2;
+	floorTransform2.setIdentity();
+	floorTransform2.setOrigin(btVector3(0,-50,100));
+
+	newFloor2 -> buildObject(floor_plane2, floorShape2, floorMass, floorTransform2, localFloorInertia);
+
+
+
+	Ogre::Entity* ball = mSceneMgr->createEntity("ball", Ogre::SceneManager::PT_SPHERE);
+	ball->setMaterialName("Glass");
+
+	btCollisionShape *ballShape = new btSphereShape(btScalar(50.0f));
+
+	sim ->  getCollisionShapes().push_back(ballShape);
+
+	btTransform ballTransform;
+	ballTransform.setIdentity();
+	ballTransform.setRotation(btQuaternion(1.0f, 1.0f, 1.0f, 0.0f));
+
+	btScalar ballMass = 10.0f;
+	btVector3 ballInertia(0,0,0);
+
+	ballTransform.setOrigin(btVector3(0,0,0));
+
+	GameObject* newBall = new GameObject("newBall", mSceneMgr, sim);
+	sim -> addObject(newBall);
+
+	newBall -> buildObject(ball, ballShape, ballMass, ballTransform, ballInertia);
+	newBall -> getBody() -> setRestitution(1.0f);
+	float randY = rand()% 1;
+	float randX = (rand()% 1-0.5)*3.0;
+	newBall -> getBody() -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+	newBall -> setScale(Ogre::Vector3(0.1f,0.1f,0.1f));
+
+	Ogre::Entity* paddleEntity = mSceneMgr->createEntity("paddle", Ogre::SceneManager::PT_CUBE);
+	mSceneMgr -> setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+
+	paddleEntity->setMaterialName("Examples/BumpyMetal");
+	btCollisionShape *paddleShape = new btBoxShape(btVector3(50,50,50));
+	btScalar paddleMass = 800000.0f;
+	btVector3 paddleIntertia(0,0,0);
+
+	GameObject* paddle = new GameObject("paddle",mSceneMgr, sim);
+	btTransform paddleTransform;
+	paddleTransform.setIdentity();
+	paddleTransform.setOrigin(btVector3(0.0f,0.0f,-50.0f));
+
+	//paddle -> getNode() -> setScale(Ogre::Vector3(0.1f,0.05f,0.01f));
+	paddle -> buildObject(paddleEntity, paddleShape, paddleMass, paddleTransform, paddleIntertia);
+	paddle -> setScale(Ogre::Vector3(0.2,0.2,0.01));
+	paddle -> getBody() -> setGravity(btVector3(0,0,0));
+	paddle -> getBody() -> setRestitution(0.95f);
+	paddle -> getBody() -> setAngularFactor(btVector3(1,1,0));
+	paddle -> getBody() -> setLinearFactor(btVector3(1,1,0)); 
+
+	Ogre::Entity* paddleEntity2 = mSceneMgr->createEntity("paddle2", Ogre::SceneManager::PT_CUBE);
+	GameObject* paddle2 = new GameObject("paddle2",mSceneMgr, sim);
+	btTransform paddleTransform2;
+	paddleTransform2.setIdentity();
+	paddleTransform2.setOrigin(btVector3(0.0f,0.0f,150.0f));
+
+	btCollisionShape *paddleShape2 = new btBoxShape(btVector3(50,50,50));
+
+	paddleEntity2->setMaterialName("Examples/BumpyMetal");
+
+	paddle2 -> buildObject(paddleEntity2, paddleShape2, paddleMass, paddleTransform2, paddleIntertia);
+	paddle2 -> setScale(Ogre::Vector3(0.2,0.2,0.01));
+	paddle2 -> getBody() -> setGravity(btVector3(0,0,0));
+	paddle2 -> getBody() -> setRestitution(0.95f);
+	paddle2 -> getBody() -> setAngularFactor(btVector3(1,1,0));
+	paddle2 -> getBody() -> setLinearFactor(btVector3(1,1,0)); 
+
+	sim -> addObject(paddle);
+	//sim -> addObject(paddle2);
+	mCamera->setPosition(Ogre::Vector3(0, 100, -150));
+	mCamera->lookAt(Ogre::Vector3(0, 0, 50));
+
+	sim -> getDynamicsWorld() -> setInternalTickCallback(tickCallBack);
+	bool collisionWait = false;
+
+	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+	sheet = wmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
+	score = wmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	hiscore = wmgr.createWindow("TaharezLook/StaticText", "CEGUIDemo/HiScore");
+	score->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	hiscore->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    hiscore->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim( 0, 0)));
+	sheet->addChild(score);
+	sheet->addChild(hiscore);
+	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(sheet);
+	score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
+
+	while(true)
+	{
+		Ogre::WindowEventUtilities::messagePump();
+		sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
+		// Check that paddle doesn't go out of bounds
+		if(!(state -> isGameOver())){
+			char score_string[32];
+			sprintf(score_string, "Score: %d", state -> getScore());
+			score->setText(score_string);
+			sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
+			hiscore->setText(score_string);
+			}
+			else
+			{
+				score -> setText("Game Over");
+			}
+		
+		Ogre::Vector3 paddlePos = paddle -> getNode() -> getPosition();
+		// if(paddlePos[0] < -100.0f || paddlePos[0] > 100.0f
+		//    || paddlePos[1] < -39.0f || paddlePos[1] > 100.0f
+		//    || paddlePos[2] < -100.0f || paddlePos[2] > 100.0f)
+		// {
+		// 	paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+		// }
+
+	 	btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
+
+	 	btScalar x = cur_vel.x();
+	 	btScalar y = cur_vel.y();
+	 	btScalar z = cur_vel.z();
+
+		if(paddlePos.x < -62.0f)
+		{
+			x = std::max(0.0f, x);
+		}
+
+		else if(paddlePos.x > 63.0f)
+		{
+			x = std::min(0.0f, x);
+		}
+
+		if(paddlePos.y < -39.0f)
+		{
+			y = std::max(0.0f, y);
+		}
+
+		else if(paddlePos.y > 31.0f)
+		{
+			y = std::min(0.0f, y);
+		}
+
+		paddle -> getBody() -> setLinearVelocity(btVector3(x, y, z));
+		mCamera -> lookAt(paddle -> getNode() -> getPosition());
+		//paddle -> getNode() -> lookAt(Ogre::Vector3(0,-50.0f,100.0f));
+		collisionWait = collisionHandler(collisionWait);
+
+		
+		for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
+		{
+			btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
+			btRigidBody* rb = btRigidBody::upcast(o);
+
+			if(rb && rb -> getMotionState())
+			{
+				btTransform tr;
+				rb -> getMotionState() -> getWorldTransform(tr);
+
+				void *usrp = rb -> getUserPointer();
+				if(usrp)
+				{
+					btQuaternion rot = tr.getRotation();
+					Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *>(usrp);
+					if((sn -> getName() == "newBall") && ((tr.getOrigin()).getY() <= -60.0f || (tr.getOrigin()).getY() > 250.0f))
+						{
+							//sim -> getDynamicsWorld() -> removeRigidBody(rb);
+							if( cooldown >= 60 && !(state -> isGameOver()))
+							{
+								std::cout <<" Out of bounds! \n";
+								state -> setGameOver(true);
+								
+								break;
+							}
+						}
+					else{
+						sn -> setPosition(Ogre::Vector3(tr.getOrigin().getX(), tr.getOrigin().getY(), tr.getOrigin().getZ()));
+						sn -> setOrientation(Ogre::Quaternion(rot.getW(), rot.getX(), rot.getY(), rot.getZ()));
+					}
+				}
+			}
+		}
+		//checkWalls(velocity,ball_node->getPosition());
+		//ball_node->setPosition( Ogre::Vector3(ball_node->getPosition() + velocity));
+		if(cooldown < 60) {cooldown++;}
+		if(!mRoot->renderOneFrame()) 
+			{
+				break;
+			}
+	}
+}
+
 void TutorialApplication::netMenu() {
 
 	netm = new NetManager();
@@ -360,9 +613,10 @@ void TutorialApplication::netMenu() {
 	CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
 	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *broadcast = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
-	CEGUI::Window *msg = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
-	CEGUI::Window *check = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *send = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	CEGUI::Window *recv = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.4, 0)));
@@ -370,11 +624,14 @@ void TutorialApplication::netMenu() {
 	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
 
-	msg->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	msg->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+	broadcast->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	broadcast->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
 
-	check->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	check->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
+	send->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	send->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
+
+	recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
 
 	host->setText("Host Game");
 	nMenu->addChild(host);
@@ -382,12 +639,14 @@ void TutorialApplication::netMenu() {
 	join->setText("Join Game");
 	nMenu->addChild(join);
 
-	msg->setText("Send Messsage");
-	nMenu->addChild(msg);
+	broadcast->setText("UDP Broadcast");
+	nMenu->addChild(broadcast);
 
-	check->setText("Check Messsage");
-	nMenu->addChild(check);
+	send->setText("Send Msg");
+	nMenu->addChild(send);
 
+	recv->setText("Receive Msg");
+	nMenu->addChild(recv);
 
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
 
@@ -395,13 +654,31 @@ void TutorialApplication::netMenu() {
 
 	join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::lobbyMenu, this));
 
-	msg->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::sendMessage, this));
+	broadcast->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::broadcastUDP, this));
 
-	check->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::checkMessages, this));
+	send->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::sendMsg, this));
+
+	recv->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::recvMsg, this));
+
 }
 
 void TutorialApplication::initHost() {
-	std::cout << netm -> multiPlayerInit() << "\n";
+
+	netm -> multiPlayerInit(1);
+	// if(netm -> pollForActivity(1000)) {
+	// 	std::cout << "Connection Established" << "\n";
+	// }
+	int count = 0;
+	while((netm -> pollForActivity(1000)) == 0 && count < 10) {
+		count++;
+	}
+	if(count < 10) {
+		std::cout << netm -> getClients() << "\n";
+	}
+	netm -> pollForActivity(1000);
+	if(netm -> getClients() > 0) {
+		this -> gameLoopMP();
+	}
 }
 
 void TutorialApplication::checkMessages(){
@@ -446,6 +723,26 @@ void TutorialApplication::sendMessage(){
 	const char* buf = "Testing";
 	netm-> messageServer(PROTOCOL_ALL, buf, strlen(buf));
 }
+
+void TutorialApplication::broadcastUDP() {
+	std::cout << netm -> getPort() << "\n";
+	netm -> broadcastUDPInvitation(1);
+}
+
+void TutorialApplication::sendMsg() {
+	const char* buf = "Testing";
+	netm -> messageClients(PROTOCOL_ALL, buf, strlen(buf));
+}
+
+void TutorialApplication::recvMsg() {
+	if(netm -> scanForActivity()) {
+		std::cout << "Got Message" << "\n";
+	}
+	else {
+		std::cout << "No Messages Received" << "\n";
+	}
+}
+
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 {
 	btTransform tr;
@@ -845,8 +1142,18 @@ void TutorialApplication::createWalls(void)
 		100, 100, //size wxh
 		2, 2, //texture segments
 		true,  //normals
-		1, 5, 5, //texture coordinates u and v
+		1, 1, 1, //texture coordinates u and v
 		Ogre::Vector3::UNIT_Z); //up vector
+
+		Ogre::MeshManager::getSingleton().createPlane(
+			"floor2", //name
+			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, //resource group name
+			plane,  //plane object
+			100, 100, //size wxh
+			2, 2, //texture segments
+			true,  //normals
+			1, 1, 1, //texture coordinates u and v
+			Ogre::Vector3::UNIT_Z); //up vector
 
 	plane = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
 
@@ -854,7 +1161,7 @@ void TutorialApplication::createWalls(void)
 		"north",
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		plane, 
-		100, 100,
+		5, 100,
 		2, 2, 
 		true, 
 		1, 5, 5, 

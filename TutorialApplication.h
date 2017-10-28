@@ -42,6 +42,7 @@ protected:
   NetManager *netm;
     virtual void createScene(void);
     void gameLoop(void);
+    void gameLoopMP(void);
     void initSDL();
     void quitSDL();
     void initCEGUI();
@@ -62,6 +63,9 @@ protected:
   void lobbyMenu(void);
   void checkMessages();
   void sendMessage();
+  void broadcastUDP(void);
+  void sendMsg(void);
+  void recvMsg(void);
 };
 
 //---------------------------------------------------------------------------
