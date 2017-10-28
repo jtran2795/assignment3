@@ -23,6 +23,7 @@ Mix_Chunk *bell = NULL;
 int rotate = 0;
 int cooldown = 0;
 bool single = false; 
+bool host = false;
 CEGUI::Window *sheet;
 CEGUI::Window *score;
 CEGUI::Window *hiscore;
@@ -485,9 +486,8 @@ void TutorialApplication::gameLoopMP(void) {
 	paddle2 -> getBody() -> setLinearFactor(btVector3(1,1,0)); 
 
 	sim -> addObject(paddle);
-	//sim -> addObject(paddle2);
-	mCamera->setPosition(Ogre::Vector3(0, 100, -150));
-	mCamera->lookAt(Ogre::Vector3(0, 0, 50));
+	sim -> addObject(paddle2);
+
 
 	sim -> getDynamicsWorld() -> setInternalTickCallback(tickCallBack);
 	bool collisionWait = false;
@@ -503,104 +503,211 @@ void TutorialApplication::gameLoopMP(void) {
 	sheet->addChild(hiscore);
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(sheet);
 	score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
-
-	while(true)
+	if(host)
 	{
-		Ogre::WindowEventUtilities::messagePump();
-		sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
-		// Check that paddle doesn't go out of bounds
-		if(!(state -> isGameOver())){
-			char score_string[32];
-			sprintf(score_string, "Score: %d", state -> getScore());
-			score->setText(score_string);
-			sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
-			hiscore->setText(score_string);
-			}
-			else
-			{
-				score -> setText("Game Over");
-			}
-		
-		Ogre::Vector3 paddlePos = paddle -> getNode() -> getPosition();
-		// if(paddlePos[0] < -100.0f || paddlePos[0] > 100.0f
-		//    || paddlePos[1] < -39.0f || paddlePos[1] > 100.0f
-		//    || paddlePos[2] < -100.0f || paddlePos[2] > 100.0f)
-		// {
-		// 	paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-		// }
-
-	 	btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
-
-	 	btScalar x = cur_vel.x();
-	 	btScalar y = cur_vel.y();
-	 	btScalar z = cur_vel.z();
-
-		if(paddlePos.x < -62.0f)
+		mCamera->setPosition(Ogre::Vector3(0, 100, -150));
+		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
+		while(true)
 		{
-			x = std::max(0.0f, x);
-		}
-
-		else if(paddlePos.x > 63.0f)
-		{
-			x = std::min(0.0f, x);
-		}
-
-		if(paddlePos.y < -39.0f)
-		{
-			y = std::max(0.0f, y);
-		}
-
-		else if(paddlePos.y > 31.0f)
-		{
-			y = std::min(0.0f, y);
-		}
-
-		paddle -> getBody() -> setLinearVelocity(btVector3(x, y, z));
-		mCamera -> lookAt(paddle -> getNode() -> getPosition());
-		//paddle -> getNode() -> lookAt(Ogre::Vector3(0,-50.0f,100.0f));
-		collisionWait = collisionHandler(collisionWait);
-
-		
-		for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
-		{
-			btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
-			btRigidBody* rb = btRigidBody::upcast(o);
-
-			if(rb && rb -> getMotionState())
-			{
-				btTransform tr;
-				rb -> getMotionState() -> getWorldTransform(tr);
-
-				void *usrp = rb -> getUserPointer();
-				if(usrp)
+			Ogre::WindowEventUtilities::messagePump();
+			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
+			// Check that paddle doesn't go out of bounds
+			if(!(state -> isGameOver())){
+				char score_string[32];
+				sprintf(score_string, "Score: %d", state -> getScore());
+				score->setText(score_string);
+				sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
+				hiscore->setText(score_string);
+				}
+				else
 				{
-					btQuaternion rot = tr.getRotation();
-					Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *>(usrp);
-					if((sn -> getName() == "newBall") && ((tr.getOrigin()).getY() <= -60.0f || (tr.getOrigin()).getY() > 250.0f))
-						{
-							//sim -> getDynamicsWorld() -> removeRigidBody(rb);
-							if( cooldown >= 60 && !(state -> isGameOver()))
+					score -> setText("Game Over");
+				}
+			
+			Ogre::Vector3 paddlePos = paddle -> getNode() -> getPosition();
+			// if(paddlePos[0] < -100.0f || paddlePos[0] > 100.0f
+			//    || paddlePos[1] < -39.0f || paddlePos[1] > 100.0f
+			//    || paddlePos[2] < -100.0f || paddlePos[2] > 100.0f)
+			// {
+			// 	paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+			// }
+
+		 	btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
+
+		 	btScalar x = cur_vel.x();
+		 	btScalar y = cur_vel.y();
+		 	btScalar z = cur_vel.z();
+
+			if(paddlePos.x < -62.0f)
+			{
+				x = std::max(0.0f, x);
+			}
+
+			else if(paddlePos.x > 63.0f)
+			{
+				x = std::min(0.0f, x);
+			}
+
+			if(paddlePos.y < -39.0f)
+			{
+				y = std::max(0.0f, y);
+			}
+
+			else if(paddlePos.y > 31.0f)
+			{
+				y = std::min(0.0f, y);
+			}
+
+			paddle -> getBody() -> setLinearVelocity(btVector3(x, y, z));
+			mCamera -> lookAt(paddle -> getNode() -> getPosition());
+			//paddle -> getNode() -> lookAt(Ogre::Vector3(0,-50.0f,100.0f));
+			collisionWait = collisionHandler(collisionWait);
+
+			
+			for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
+			{
+				btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
+				btRigidBody* rb = btRigidBody::upcast(o);
+
+				if(rb && rb -> getMotionState())
+				{
+					btTransform tr;
+					rb -> getMotionState() -> getWorldTransform(tr);
+
+					void *usrp = rb -> getUserPointer();
+					if(usrp)
+					{
+						btQuaternion rot = tr.getRotation();
+						Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *>(usrp);
+						if((sn -> getName() == "newBall") && ((tr.getOrigin()).getY() <= -60.0f || (tr.getOrigin()).getY() > 250.0f))
 							{
-								std::cout <<" Out of bounds! \n";
-								state -> setGameOver(true);
-								
-								break;
+								//sim -> getDynamicsWorld() -> removeRigidBody(rb);
+								if( cooldown >= 60 && !(state -> isGameOver()))
+								{
+									std::cout <<" Out of bounds! \n";
+									state -> setGameOver(true);
+									
+									break;
+								}
 							}
+						else{
+							sn -> setPosition(Ogre::Vector3(tr.getOrigin().getX(), tr.getOrigin().getY(), tr.getOrigin().getZ()));
+							sn -> setOrientation(Ogre::Quaternion(rot.getW(), rot.getX(), rot.getY(), rot.getZ()));
 						}
-					else{
-						sn -> setPosition(Ogre::Vector3(tr.getOrigin().getX(), tr.getOrigin().getY(), tr.getOrigin().getZ()));
-						sn -> setOrientation(Ogre::Quaternion(rot.getW(), rot.getX(), rot.getY(), rot.getZ()));
 					}
 				}
 			}
+			//checkWalls(velocity,ball_node->getPosition());
+			//ball_node->setPosition( Ogre::Vector3(ball_node->getPosition() + velocity));
+			if(cooldown < 60) {cooldown++;}
+			if(!mRoot->renderOneFrame()) 
+				{
+					break;
+				}
 		}
-		//checkWalls(velocity,ball_node->getPosition());
-		//ball_node->setPosition( Ogre::Vector3(ball_node->getPosition() + velocity));
-		if(cooldown < 60) {cooldown++;}
-		if(!mRoot->renderOneFrame()) 
+	}
+	else
+	{
+		mCamera->setPosition(Ogre::Vector3(0, 100, 300));
+		mCamera->lookAt(Ogre::Vector3(0, 0, -50));
+		while(true)
+		{
+			Ogre::WindowEventUtilities::messagePump();
+			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
+			// Check that paddle doesn't go out of bounds
+			if(!(state -> isGameOver())){
+				char score_string[32];
+				sprintf(score_string, "Score: %d", state -> getScore());
+				score->setText(score_string);
+				sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
+				hiscore->setText(score_string);
+				}
+				else
+				{
+					score -> setText("Game Over");
+				}
+			
+			Ogre::Vector3 paddlePos = paddle2 -> getNode() -> getPosition();
+			// if(paddlePos[0] < -100.0f || paddlePos[0] > 100.0f
+			//    || paddlePos[1] < -39.0f || paddlePos[1] > 100.0f
+			//    || paddlePos[2] < -100.0f || paddlePos[2] > 100.0f)
+			// {
+			// 	paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+			// }
+
+		 	btVector3 cur_vel = paddle2 -> getBody() -> getLinearVelocity();
+
+		 	btScalar x = cur_vel.x();
+		 	btScalar y = cur_vel.y();
+		 	btScalar z = cur_vel.z();
+
+			if(paddlePos.x < -62.0f)
 			{
-				break;
+				x = std::max(0.0f, x);
 			}
+
+			else if(paddlePos.x > 63.0f)
+			{
+				x = std::min(0.0f, x);
+			}
+
+			if(paddlePos.y < -39.0f)
+			{
+				y = std::max(0.0f, y);
+			}
+
+			else if(paddlePos.y > 31.0f)
+			{
+				y = std::min(0.0f, y);
+			}
+
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(x, y, z));
+			mCamera -> lookAt(paddle2 -> getNode() -> getPosition());
+			//paddle -> getNode() -> lookAt(Ogre::Vector3(0,-50.0f,100.0f));
+			collisionWait = collisionHandler(collisionWait);
+
+			
+			for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
+			{
+				btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
+				btRigidBody* rb = btRigidBody::upcast(o);
+
+				if(rb && rb -> getMotionState())
+				{
+					btTransform tr;
+					rb -> getMotionState() -> getWorldTransform(tr);
+
+					void *usrp = rb -> getUserPointer();
+					if(usrp)
+					{
+						btQuaternion rot = tr.getRotation();
+						Ogre::SceneNode *sn = static_cast<Ogre::SceneNode *>(usrp);
+						if((sn -> getName() == "newBall") && ((tr.getOrigin()).getY() <= -60.0f || (tr.getOrigin()).getY() > 250.0f))
+							{
+								//sim -> getDynamicsWorld() -> removeRigidBody(rb);
+								if( cooldown >= 60 && !(state -> isGameOver()))
+								{
+									std::cout <<" Out of bounds! \n";
+									state -> setGameOver(true);
+									
+									break;
+								}
+							}
+						else{
+							sn -> setPosition(Ogre::Vector3(tr.getOrigin().getX(), tr.getOrigin().getY(), tr.getOrigin().getZ()));
+							sn -> setOrientation(Ogre::Quaternion(rot.getW(), rot.getX(), rot.getY(), rot.getZ()));
+						}
+					}
+				}
+			}
+			//checkWalls(velocity,ball_node->getPosition());
+			//ball_node->setPosition( Ogre::Vector3(ball_node->getPosition() + velocity));
+			if(cooldown < 60) {cooldown++;}
+			if(!mRoot->renderOneFrame()) 
+				{
+					break;
+				}
+		}
 	}
 }
 
@@ -677,6 +784,7 @@ void TutorialApplication::initHost() {
 	}
 	netm -> pollForActivity(1000);
 	if(netm -> getClients() > 0) {
+		host = true;
 		this -> gameLoopMP();
 	}
 }
@@ -708,11 +816,14 @@ void TutorialApplication::lobbyMenu() {
 				//ip = ip.substr(STR_OPEN.length());
 				netm -> joinMultiPlayer(netm -> udpServerData[i].output);
 				sendMessage();
+				if(netm -> pollForActivity(5000))
+				{
+					this -> gameLoopMP();
+				}
 				//std::cout << ip << "\n";
 				break;
 			}
 		}
-
 	}
 
 	//std::cout << netm -> joinMultiPlayer("TG_SERVER_OPEN128.83.139.166") << "\n";
@@ -978,77 +1089,144 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 //---------------------------------------------------------------------------
 bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 {
+	
 	if (arg.key == OIS::KC_ESCAPE) {
 		quitSDL();
     	mShutDown = true;
   	}
-
-	std:: deque<GameObject*> objList = sim -> getObjList();
-	GameObject* paddle = NULL;
-	for(int i = 0; i < objList.size();i++) 
-	{
-		if(objList[i] -> getName() == Ogre::String("paddle")) 
-		{
-			paddle = objList[i];
-		}
-	}
-	if(paddle == NULL) 
-		return true;
-
-	btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
-
-	btScalar x = cur_vel.x();
-	btScalar y = cur_vel.y();
-	btScalar z = cur_vel.z();
-
-	if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(5.0f, y, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(x, 5.0f, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(x, -5.0f, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(-5.0f, y, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_E)
-	{
-		//Mix_PlayChannel(-1, bell, 0);
-		//sound -> playChunk("bell.wav");
-		std::cout << state -> getScore() << "\n";
-		// std::cout << paddle -> getBody() -> getOrientation().getAngle() << "\n";
-		// std::cout << paddle -> getBody() -> getOrientation().getAxis().getX() << " "
-		//  << paddle -> getBody() -> getOrientation().getAxis().getY() << " "
-		//  << paddle -> getBody() -> getOrientation().getAxis().getZ() << "\n";
-	}
-  	if (arg.key == OIS::KC_SPACE && (rotate == 0 || rotate == 2))
-	{
-		paddle -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
-		paddle -> getBody() -> activate();
-		rotate = 1;
-		sound -> playChunk("swing.wav");
-	}
-	if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 0 || rotate == 4))
-	{
-		paddle -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
-		paddle -> getBody() -> activate();
-		rotate = 3;
-		sound -> playChunk("swing.wav");
-	}
 	if (arg.key == OIS::KC_M) {
  		sound -> muteSound();
  	}
+ 	if(host)
+ 	{
+		std:: deque<GameObject*> objList = sim -> getObjList();
+		GameObject* paddle = NULL;
+		for(int i = 0; i < objList.size();i++) 
+		{
+			if(objList[i] -> getName() == Ogre::String("paddle")) 
+			{
+				paddle = objList[i];
+			}
+		}
+		if(paddle == NULL) 
+			return true;
 
+		btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
+
+		btScalar x = cur_vel.x();
+		btScalar y = cur_vel.y();
+		btScalar z = cur_vel.z();
+
+		if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(5.0f, y, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(x, 5.0f, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(x, -5.0f, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(-5.0f, y, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_E)
+		{
+			//Mix_PlayChannel(-1, bell, 0);
+			//sound -> playChunk("bell.wav");
+			std::cout << state -> getScore() << "\n";
+			// std::cout << paddle -> getBody() -> getOrientation().getAngle() << "\n";
+			// std::cout << paddle -> getBody() -> getOrientation().getAxis().getX() << " "
+			//  << paddle -> getBody() -> getOrientation().getAxis().getY() << " "
+			//  << paddle -> getBody() -> getOrientation().getAxis().getZ() << "\n";
+		}
+	  	if (arg.key == OIS::KC_SPACE && (rotate == 0 || rotate == 2))
+		{
+			paddle -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle -> getBody() -> activate();
+			rotate = 1;
+			sound -> playChunk("swing.wav");
+		}
+		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 0 || rotate == 4))
+		{
+			paddle -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle -> getBody() -> activate();
+			rotate = 3;
+			sound -> playChunk("swing.wav");
+		}
+	}
+	else
+	{
+		std:: deque<GameObject*> objList = sim -> getObjList();
+		GameObject* paddle2 = NULL;
+		for(int i = 0; i < objList.size();i++) 
+		{
+			if(objList[i] -> getName() == Ogre::String("paddle2")) 
+			{
+				paddle2 = objList[i];
+			}
+		}
+		if(paddle2 == NULL) 
+			return true;
+
+		btVector3 cur_vel = paddle2 -> getBody() -> getLinearVelocity();
+
+		btScalar x = cur_vel.x();
+		btScalar y = cur_vel.y();
+		btScalar z = cur_vel.z();
+
+		if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(-5.0f, y, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(x, 5.0f, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(x, -5.0f, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(5.0f, y, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_E)
+		{
+			//Mix_PlayChannel(-1, bell, 0);
+			//sound -> playChunk("bell.wav");
+			std::cout << state -> getScore() << "\n";
+			// std::cout << paddle2 -> getBody() -> getOrientation().getAngle() << "\n";
+			// std::cout << paddle2 -> getBody() -> getOrientation().getAxis().getX() << " "
+			//  << paddle2 -> getBody() -> getOrientation().getAxis().getY() << " "
+			//  << paddle2 -> getBody() -> getOrientation().getAxis().getZ() << "\n";
+		}
+	  	if (arg.key == OIS::KC_SPACE && (rotate == 0 || rotate == 2))
+		{
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> activate();
+			rotate = 1;
+			sound -> playChunk("swing.wav");
+		}
+		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 0 || rotate == 4))
+		{
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> activate();
+			rotate = 3;
+			sound -> playChunk("swing.wav");
+		}
+	}
 	CEGUI::GUIContext& context = CEGUI::System::getSingleton().getDefaultGUIContext();
 	context.injectKeyDown((CEGUI::Key::Scan)arg.key);
 	context.injectChar((CEGUI::Key::Scan)arg.text);
@@ -1056,55 +1234,107 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 }
 bool TutorialApplication::keyReleased( const OIS::KeyEvent &arg )
 {
-	std:: deque<GameObject*> objList = sim -> getObjList();
-	GameObject* paddle = NULL;
-	for(int i = 0; i < objList.size();i++) {
-		if(objList[i] -> getName() == "paddle") {
-			paddle = objList[i];
+
+	if(host)
+	{
+		std:: deque<GameObject*> objList = sim -> getObjList();
+		GameObject* paddle = NULL;
+		for(int i = 0; i < objList.size();i++) {
+			if(objList[i] -> getName() == "paddle") {
+				paddle = objList[i];
+			}
+		}
+		if(paddle == NULL)
+			return true;
+
+		btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
+
+		btScalar x = cur_vel.x();
+		btScalar y = cur_vel.y();
+		btScalar z = cur_vel.z();
+		if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
+			paddle -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
+		{
+			paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
+			paddle -> getBody() -> activate();
+		}
+	  	if (arg.key == OIS::KC_SPACE && (rotate == 1 || rotate == 6))
+		{
+			paddle -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle -> getBody() -> activate();
+			rotate = 2;
+		}
+		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 3 || rotate == 7))
+		{
+			paddle -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle -> getBody() -> activate();
+			rotate = 4;
 		}
 	}
-	if(paddle == NULL)
-		return true;
+	else
+	{
+		std:: deque<GameObject*> objList = sim -> getObjList();
+		GameObject* paddle2 = NULL;
+		for(int i = 0; i < objList.size();i++) {
+			if(objList[i] -> getName() == "paddle2") {
+				paddle2 = objList[i];
+			}
+		}
+		if(paddle2 == NULL)
+			return true;
 
-	btVector3 cur_vel = paddle -> getBody() -> getLinearVelocity();
+		btVector3 cur_vel = paddle2 -> getBody() -> getLinearVelocity();
 
-	btScalar x = cur_vel.x();
-	btScalar y = cur_vel.y();
-	btScalar z = cur_vel.z();
-
-	if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
-		paddle -> getBody() -> activate();
+		btScalar x = cur_vel.x();
+		btScalar y = cur_vel.y();
+		btScalar z = cur_vel.z();
+		if (arg.key == OIS::KC_A || arg.key == OIS::KC_LEFT)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
+			paddle2 -> getBody() -> activate();
+		}
+		if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
+		{
+			paddle2 -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
+			paddle2 -> getBody() -> activate();
+		}
+	  	if (arg.key == OIS::KC_SPACE && (rotate == 1 || rotate == 6))
+		{
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> activate();
+			rotate = 2;
+		}
+		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 3 || rotate == 7))
+		{
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> activate();
+			rotate = 4;
+		}
 	}
-	if (arg.key == OIS::KC_W || arg.key == OIS::KC_UP)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_S || arg.key == OIS::KC_DOWN)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(x, 0.0f, z));
-		paddle -> getBody() -> activate();
-	}
-	if (arg.key == OIS::KC_D || arg.key == OIS::KC_RIGHT)
-	{
-		paddle -> getBody() -> setLinearVelocity(btVector3(0.0f, y, z));
-		paddle -> getBody() -> activate();
-	}
-  	if (arg.key == OIS::KC_SPACE && (rotate == 1 || rotate == 6))
-	{
-		paddle -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
-		paddle -> getBody() -> activate();
-		rotate = 2;
-	}
-	if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 3 || rotate == 7))
-	{
-		paddle -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
-		paddle -> getBody() -> activate();
-		rotate = 4;
-	}
-
 	CEGUI::System::getSingleton().getDefaultGUIContext().injectKeyUp((CEGUI::Key::Scan)arg.key);
 	return true;
 }
