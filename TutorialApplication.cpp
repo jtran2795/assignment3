@@ -610,8 +610,10 @@ void TutorialApplication::gameLoopMP(void) {
 	{
 		mCamera->setPosition(Ogre::Vector3(0, 100, 300));
 		mCamera->lookAt(Ogre::Vector3(0, 0, -50));
+		int polling = 0;
 		while(true)
 		{
+
 			Ogre::WindowEventUtilities::messagePump();
 			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
 			// Check that paddle doesn't go out of bounds
@@ -640,7 +642,13 @@ void TutorialApplication::gameLoopMP(void) {
 		 	btScalar x = cur_vel.x();
 		 	btScalar y = cur_vel.y();
 		 	btScalar z = cur_vel.z();
-
+			if(polling > 60)
+			{
+				char buffer [128];
+				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
+				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+			}
+			polling++;
 			if(paddlePos.x < -62.0f)
 			{
 				x = std::max(0.0f, x);
