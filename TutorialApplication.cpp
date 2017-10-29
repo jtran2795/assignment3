@@ -514,21 +514,38 @@ void TutorialApplication::gameLoopMP(void) {
 
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < netm -> udpClientData.size();i++) {
+					std::cout << "Data size: " << netm -> udpClientData.size() << "\n";
 					//std::cout << "Got Client Data" << "\n";
 					if(netm -> udpClientData[i] -> updated) {
 						netm -> udpClientData[i] -> updated = false;
 						//std::cout << "Client Data Is New" << "\n";
 						std::string message(netm -> udpClientData[i] -> output);
+						std::cout << message << "\n";
 						if(message.substr(0,3) == std::string("POS")) {
-							//std::cout << "Client Data Is Position Info" << "\n";
+							std::cout << "Client Data Is Position Info" << "\n";
 							int x = message.find_first_of("X");
 							int y = message.find_first_of("Y");
+							
+
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1).c_str());
 							std::cout << "Y: " << yPos << "\n";
+
+							int rotLoc = message.find("ROT");
+							std::string rot = message.substr(rotLoc);
+							x = rot.find_first_of("X");
+							y = rot.find_first_of("Y");
+							int z = rot.find_first_of("Z");
+							int w = rot.find_first_of("W");
+							float xRot = std::atof(rot.substr(x+1,y).c_str());
+							float yRot = std::atof(rot.substr(y+1,z).c_str());
+							float zRot = std::atof(rot.substr(z+1,w).c_str());
+							float angle = std::atof(rot.substr(w+1).c_str());
 							btVector3 trVector(xPos, yPos, paddle2 -> getNode() -> getPosition().z);
+							btQuaternion newRot(btVector3(xRot,yRot,zRot), angle);
 							btTransform tr = paddle2 -> getBody() -> getWorldTransform();
 							tr.setOrigin(trVector);
+							tr.setRotation(newRot);
 							paddle2 -> getBody() -> setWorldTransform(tr);
 						}
 					}
@@ -952,6 +969,9 @@ void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
 	rb -> activate();
 }
 void TutorialApplication::resetGame(){
+	char buffer [128];
+	snprintf(buffer,128,"RESET");
+	netm -> messageClients(PROTOCOL_TCP, buffer, 128);
 	for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
 	{
 		btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
