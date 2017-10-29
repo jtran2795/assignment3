@@ -445,7 +445,7 @@ void TutorialApplication::gameLoopMP(void) {
 	newBall -> getBody() -> setRestitution(1.0f);
 	float randY = rand()% 1;
 	float randX = (rand()% 1-0.5)*3.0;
-	newBall -> getBody() -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+	newBall -> getBody() -> setLinearVelocity(btVector3(randX,randY, 2.0f));
 	newBall -> setScale(Ogre::Vector3(0.1f,0.1f,0.1f));
 
 	Ogre::Entity* paddleEntity = mSceneMgr->createEntity("paddle", Ogre::SceneManager::PT_CUBE);
@@ -563,12 +563,23 @@ void TutorialApplication::gameLoopMP(void) {
 		 	btScalar y = cur_vel.y();
 		 	btScalar z = cur_vel.z();
 
+		 	
 			if(polling > 60)
 			{
 				char buffer [128];
 				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
-				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+				netm -> messageClients(PROTOCOL_ALL, buffer, 128);
+
+				Ogre::Vector3 ballPos =  newBall -> getNode() -> getPosition();
+				snprintf(buffer,128,"BPOSX%fY%fZ%f", ballPos.x, ballPos.y, ballPos.z);
+				netm -> messageClients(PROTOCOL_ALL, buffer, 128);
+
+				btVector3 ballVel = newBall -> getBody() -> getLinearVelocity();
+				snprintf(buffer,128,"BVELX%fY%fZ%f", ballVel.x(), ballVel.y(), ballVel.z());
+				netm -> messageClients(PROTOCOL_ALL, buffer, 128);
+
 				polling = 0;
+
 			}
 			polling++;
 
