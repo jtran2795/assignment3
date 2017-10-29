@@ -503,9 +503,10 @@ void TutorialApplication::gameLoopMP(void) {
 	sheet->addChild(score);
 	sheet->addChild(hiscore);
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(sheet);
-	score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
+	
 	if(host)
 	{
+		score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
 		mCamera->setPosition(Ogre::Vector3(0, 100, -150));
 		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
 		int polling = 0;
@@ -691,26 +692,29 @@ void TutorialApplication::gameLoopMP(void) {
 			if(polling > 60)
 			{
 				char buffer [128];
-				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
+				btVector3 rot =  paddle2 -> getBody() -> getOrientation().getAxis();
+				snprintf(buffer,128,"POSX%fY%fROTX%fY%fZ%fW%f", paddlePos.x, paddlePos.y,rot.getX(), rot.getY(), rot.getZ(), paddle2 -> getBody() -> getOrientation().getAngle());
 				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+				std::cout << buffer << "\n";
+				
 				polling = 0;
 			}
 			polling++;
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < 10;i++) {
-					std::cout << "Got Client Data" << "\n";
+					//std::cout << "Got Client Data" << "\n";
 					if(netm -> udpServerData[i].updated) {
 						netm -> udpServerData[i].updated = false;
-						std::cout << "Client Data Is New" << "\n";
-						std::cout << "   " << netm -> udpServerData[i].output << "\n";
+						//std::cout << "Client Data Is New" << "\n";
+						//std::cout << "   " << netm -> udpServerData[i].output << "\n";
 						std::string message(netm -> udpServerData[i].output);
 						if(message.substr(0,3) == std::string("POS")) {
-							std::cout << "Client Data Is Position Info" << "\n";
+							//std::cout << "Client Data Is Position Info" << "\n";
 							int x = message.find_first_of("X");
 							int y = message.find_first_of("Y");
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1).c_str());
-							std::cout << "Y: " << yPos << "\n";
+							//std::cout << "Y: " << yPos << "\n";
 							btVector3 trVector(xPos, yPos, paddle -> getNode() -> getPosition().z);
 							btTransform tr = paddle -> getBody() -> getWorldTransform();
 							tr.setOrigin(trVector);
@@ -724,7 +728,7 @@ void TutorialApplication::gameLoopMP(void) {
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1,z).c_str());
 							float zPos = std::atof(message.substr(z+1).c_str());
-							std::cout << "Y: " << yPos << "\n";
+							//std::cout << "Y: " << yPos << "\n";
 							btVector3 trVector(xPos, yPos, newBall -> getNode() -> getPosition().z);
 							btTransform tr = newBall -> getBody() -> getWorldTransform();
 							tr.setOrigin(trVector);
@@ -741,6 +745,13 @@ void TutorialApplication::gameLoopMP(void) {
 							newBall -> getBody() -> setLinearVelocity(btVector3(xVel,yVel,zVel));
 						}
 					}
+				}
+				if (netm -> tcpServerData.updated) {
+					netm -> tcpServerData.updated = false;
+					std::string message(netm -> tcpServerData.output);
+						if(message.substr(0,5) == std::string("RESET")) {
+							resetGame();
+						}
 				}
 			}
 			if(paddlePos.x < -62.0f)
@@ -972,7 +983,7 @@ void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
 	btTransform tr;
 	tr.setIdentity();
-	tr.setOrigin(btVector3(0,0,-50.f));
+	tr.setOrigin(btVector3(0,0, sn -> getPosition().z));
 	sn -> setPosition(Ogre::Vector3(tr.getOrigin().getX(), tr.getOrigin().getY(), tr.getOrigin().getZ()));
 	rb -> setWorldTransform(tr);
 	rb -> activate();
@@ -997,6 +1008,10 @@ void TutorialApplication::resetGame(){
 							resetBall(sn, rb);
 						}
 					if(sn -> getName() == "paddle")
+						{
+							resetPaddle(sn, rb);
+						}
+					if(sn -> getName() == "paddle2")
 						{
 							resetPaddle(sn, rb);
 						}
