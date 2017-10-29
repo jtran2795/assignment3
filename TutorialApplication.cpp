@@ -511,6 +511,7 @@ void TutorialApplication::gameLoopMP(void) {
 		int polling = 0;
 		while(true)
 		{
+			abort();
 
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < netm -> udpClientData.size();i++) {
@@ -567,7 +568,7 @@ void TutorialApplication::gameLoopMP(void) {
 			{
 				char buffer [128];
 				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
-				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+				netm -> messageClients(PROTOCOL_ALL, buffer, 128);
 				polling = 0;
 			}
 			polling++;
@@ -685,14 +686,15 @@ void TutorialApplication::gameLoopMP(void) {
 			}
 			polling++;
 			if(netm -> scanForActivity()) {
-				for(int i = 0; i < sizeof(netm -> udpServerData)/sizeof(netm -> udpServerData[0]);i++) {
-					//std::cout << "Got Client Data" << "\n";
+				for(int i = 0; i < 10;i++) {
+					std::cout << "Got Client Data" << "\n";
 					if(netm -> udpServerData[i].updated) {
 						netm -> udpServerData[i].updated = false;
-						//std::cout << "Client Data Is New" << "\n";
+						std::cout << "Client Data Is New" << "\n";
+						std::cout << "   " << netm -> udpServerData[i].output << "\n";
 						std::string message(netm -> udpServerData[i].output);
 						if(message.substr(0,3) == std::string("POS")) {
-							//std::cout << "Client Data Is Position Info" << "\n";
+							std::cout << "Client Data Is Position Info" << "\n";
 							int x = message.find_first_of("X");
 							int y = message.find_first_of("Y");
 							float xPos = std::atof(message.substr(x+1,y).c_str());
@@ -702,6 +704,30 @@ void TutorialApplication::gameLoopMP(void) {
 							btTransform tr = paddle -> getBody() -> getWorldTransform();
 							tr.setOrigin(trVector);
 							paddle -> getBody() -> setWorldTransform(tr);
+						}
+						if(message.substr(0,4) == std::string("BPOS")) {
+							//std::cout << "Client Data Is Position Info" << "\n";
+							int x = message.find_first_of("X");
+							int y = message.find_first_of("Y");
+							int z = message.find_first_of("Z");
+							float xPos = std::atof(message.substr(x+1,y).c_str());
+							float yPos = std::atof(message.substr(y+1,z).c_str());
+							float zPos = std::atof(message.substr(z+1).c_str());
+							std::cout << "Y: " << yPos << "\n";
+							btVector3 trVector(xPos, yPos, newBall -> getNode() -> getPosition().z);
+							btTransform tr = newBall -> getBody() -> getWorldTransform();
+							tr.setOrigin(trVector);
+							newBall -> getBody() -> setWorldTransform(tr);
+						}
+						if(message.substr(0,4) == std::string("BVEL")) {
+							//std::cout << "Client Data Is Position Info" << "\n";
+							int x = message.find_first_of("X");
+							int y = message.find_first_of("Y");
+							int z = message.find_first_of("Z");
+							float xVel = std::atof(message.substr(x+1,y).c_str());
+							float yVel = std::atof(message.substr(y+1,z).c_str());
+							float zVel = std::atof(message.substr(z+1).c_str());
+							newBall -> getBody() -> setLinearVelocity(btVector3(xVel,yVel,zVel));
 						}
 					}
 				}
@@ -753,7 +779,7 @@ void TutorialApplication::gameLoopMP(void) {
 								if( cooldown >= 60 && !(state -> isGameOver()))
 								{
 									std::cout <<" Out of bounds! \n";
-									state -> setGameOver(true);
+									//state -> setGameOver(true);
 									
 									break;
 								}
