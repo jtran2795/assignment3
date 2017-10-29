@@ -508,8 +508,10 @@ void TutorialApplication::gameLoopMP(void) {
 	{
 		mCamera->setPosition(Ogre::Vector3(0, 100, -150));
 		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
+		int polling = 0;
 		while(true)
 		{
+
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < netm -> udpClientData.size();i++) {
 					//std::cout << "Got Client Data" << "\n";
@@ -532,7 +534,6 @@ void TutorialApplication::gameLoopMP(void) {
 					}
 				}
 			}
-
 			Ogre::WindowEventUtilities::messagePump();
 			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
 			// Check that paddle doesn't go out of bounds
@@ -561,6 +562,15 @@ void TutorialApplication::gameLoopMP(void) {
 		 	btScalar x = cur_vel.x();
 		 	btScalar y = cur_vel.y();
 		 	btScalar z = cur_vel.z();
+
+			if(polling > 60)
+			{
+				char buffer [128];
+				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
+				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+				polling = 0;
+			}
+			polling++;
 
 			if(paddlePos.x < -62.0f)
 			{
@@ -671,8 +681,31 @@ void TutorialApplication::gameLoopMP(void) {
 				char buffer [128];
 				snprintf(buffer,128,"POSX%fY%f", paddlePos.x, paddlePos.y);
 				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
+				polling = 0;
 			}
 			polling++;
+			if(netm -> scanForActivity()) {
+				for(int i = 0; i < sizeof(netm -> udpServerData)/sizeof(netm -> udpServerData[0]);i++) {
+					//std::cout << "Got Client Data" << "\n";
+					if(netm -> udpServerData[i].updated) {
+						netm -> udpServerData[i].updated = false;
+						//std::cout << "Client Data Is New" << "\n";
+						std::string message(netm -> udpServerData[i].output);
+						if(message.substr(0,3) == std::string("POS")) {
+							//std::cout << "Client Data Is Position Info" << "\n";
+							int x = message.find_first_of("X");
+							int y = message.find_first_of("Y");
+							float xPos = std::atof(message.substr(x+1,y).c_str());
+							float yPos = std::atof(message.substr(y+1).c_str());
+							std::cout << "Y: " << yPos << "\n";
+							btVector3 trVector(xPos, yPos, paddle -> getNode() -> getPosition().z);
+							btTransform tr = paddle -> getBody() -> getWorldTransform();
+							tr.setOrigin(trVector);
+							paddle -> getBody() -> setWorldTransform(tr);
+						}
+					}
+				}
+			}
 			if(paddlePos.x < -62.0f)
 			{
 				x = std::max(0.0f, x);
