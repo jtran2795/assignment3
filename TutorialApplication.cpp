@@ -18,6 +18,7 @@ http://www.ogre3d.org/wiki/
 #include "TutorialApplication.h"
 #include <OgreWindowEventUtilities.h>
 #include <iostream>
+#include <string>
 
 Mix_Chunk *bell = NULL;
 int rotate = 0;
@@ -509,6 +510,29 @@ void TutorialApplication::gameLoopMP(void) {
 		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
 		while(true)
 		{
+			if(netm -> scanForActivity()) {
+				for(int i = 0; i < netm -> udpClientData.size();i++) {
+					//std::cout << "Got Client Data" << "\n";
+					if(netm -> udpClientData[i] -> updated) {
+						netm -> udpClientData[i] -> updated = false;
+						//std::cout << "Client Data Is New" << "\n";
+						std::string message(netm -> udpClientData[i] -> output);
+						if(message.substr(0,3) == std::string("POS")) {
+							//std::cout << "Client Data Is Position Info" << "\n";
+							int x = message.find_first_of("X");
+							int y = message.find_first_of("Y");
+							float xPos = std::atof(message.substr(x+1,y).c_str());
+							float yPos = std::atof(message.substr(y+1).c_str());
+							std::cout << "Y: " << yPos << "\n";
+							btVector3 trVector(xPos, yPos, paddle2 -> getNode() -> getPosition().z);
+							btTransform tr = paddle2 -> getBody() -> getWorldTransform();
+							tr.setOrigin(trVector);
+							paddle2 -> getBody() -> setWorldTransform(tr);
+						}
+					}
+				}
+			}
+
 			Ogre::WindowEventUtilities::messagePump();
 			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
 			// Check that paddle doesn't go out of bounds
@@ -785,6 +809,7 @@ void TutorialApplication::initHost() {
 	netm -> pollForActivity(1000);
 	if(netm -> getClients() > 0) {
 		host = true;
+		netm -> messageClients(PROTOCOL_ALL, "ACK", 3);
 		this -> gameLoopMP();
 	}
 }

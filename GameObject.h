@@ -46,8 +46,8 @@ public:
 
 	void setScale(Ogre::Vector3 v);
 
-	btTransform getTransform(){
-		return tr;
+	btTransform* getTransform(){
+		return &tr;
 	}
 	void setTransform(btTransform t){
 		tr = t;
