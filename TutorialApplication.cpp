@@ -110,7 +110,7 @@ void TutorialApplication::createScene(void)
 
 	CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(menu);
 
-	start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::gameLoopMP, this));
+	start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::gameLoop, this));
 
 	startMulti->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::netMenu, this));
 
@@ -512,8 +512,6 @@ void TutorialApplication::gameLoopMP(void) {
 		int polling = 0;
 		while(true)
 		{
-			abort();
-
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < netm -> udpClientData.size();i++) {
 					std::cout << "Data size: " << netm -> udpClientData.size() << "\n";
