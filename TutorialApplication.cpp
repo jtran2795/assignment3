@@ -393,7 +393,7 @@ void TutorialApplication::gameLoopMP(void) {
 	btCollisionShape *floorShape = new btBoxShape(btVector3(btScalar(50.0), btScalar(0), btScalar(50.0)));
 
 	newFloor -> buildObject(floor_plane, floorShape, floorMass, floorTransform, localFloorInertia);
-	newFloor -> getBody() -> setRestitution(0.95f);
+	newFloor -> getBody() -> setRestitution(1.0f);
 
 	north_plane->setMaterialName("Examples/Rockwall");
 	//Ogre::SceneNode* north_plane_node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -419,7 +419,7 @@ void TutorialApplication::gameLoopMP(void) {
 	floorTransform2.setOrigin(btVector3(0,-50,100));
 
 	newFloor2 -> buildObject(floor_plane2, floorShape2, floorMass, floorTransform2, localFloorInertia);
-
+	newFloor2 -> getBody() -> setRestitution(1.0f);
 
 
 	Ogre::Entity* ball = mSceneMgr->createEntity("ball", Ogre::SceneManager::PT_SPHERE);
@@ -1215,12 +1215,12 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	state -> incrementBounces();
 		       					 	//std::cout << state -> getBounces() << "\n";
 		       					 	if(snA -> getName() == "newBall" ) {
-		       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 		rbA -> applyImpulse(btVector3(0.0f,50.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
 		       					 	else {
-		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 		rbB -> applyImpulse(btVector3(0.0f,50.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()) && host)
 		       					 	{
 		       					 		state -> incrementScore2();
 		       					 		state -> setGameOver(true);
@@ -1234,12 +1234,12 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	state -> incrementBounces();
 		       					 	//std::cout << state -> getBounces() << "\n";
 		       					 	if(snA -> getName() == "newBall" ) {
-		       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 		rbA -> applyImpulse(btVector3(0.0f,50.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
 		       					 	else {
-		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 		rbB -> applyImpulse(btVector3(0.0f,50.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver())  && host)
 		       					 	{
 		       					 		state -> incrementScore();
 		       					 		state -> setGameOver(true);
