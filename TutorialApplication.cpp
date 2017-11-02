@@ -529,7 +529,7 @@ void TutorialApplication::gameLoopMP(void) {
 
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1).c_str());
-							std::cout << "Y: " << yPos << "\n";
+							//std::cout << "Y: " << yPos << "\n";
 
 							int rotLoc = message.find("ROT");
 							std::string rot = message.substr(rotLoc);
@@ -684,7 +684,7 @@ void TutorialApplication::gameLoopMP(void) {
 				char score_string[32];
 				sprintf(score_string, "Your Score: %d", state -> getScore());
 				score->setText(score_string);
-				sprintf(score_string, "Their Score: %d", state -> getHiscore());
+				sprintf(score_string, "Their Score: %d", state -> getScore2());
 				hiscore->setText(score_string);
 				}
 				else
@@ -711,7 +711,7 @@ void TutorialApplication::gameLoopMP(void) {
 				btVector3 rot =  paddle2 -> getBody() -> getOrientation().getAxis();
 				snprintf(buffer,128,"POSX%fY%fROTX%fY%fZ%fW%f", paddlePos.x, paddlePos.y,rot.getX(), rot.getY(), rot.getZ(), paddle2 -> getBody() -> getOrientation().getAngle());
 				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
-				std::cout << buffer << "\n";
+				//std::cout << buffer << "\n";
 				
 				polling = 0;
 			}
@@ -766,6 +766,14 @@ void TutorialApplication::gameLoopMP(void) {
 					netm -> tcpServerData.updated = false;
 					std::string message(netm -> tcpServerData.output);
 						if(message.substr(0,5) == std::string("RESET")) {
+							std::cout << message;
+							int a = message.find_first_of("A");
+							int b = message.find_first_of("B");
+							// flipped scores since other player
+							int score2 = std::atof(message.substr(a+1,b).c_str());
+							int score = std::atof(message.substr(b+1).c_str());
+							state -> setScore(score);
+							state -> setScore2(score2);
 							resetGame();
 						}
 				}
@@ -1006,7 +1014,7 @@ void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
 }
 void TutorialApplication::resetGame(){
 
-	if(!single){
+	if(!single && host){
 		char buffer [128];
 		snprintf(buffer,128,"RESET");
 		netm -> messageClients(PROTOCOL_TCP, buffer, 128);
@@ -1047,7 +1055,7 @@ void TutorialApplication::resetGame(){
 	else{
 		if(host){
 			char buffer [128];
-			snprintf(buffer,128,"SCOREA%dB%d",score, );
+			snprintf(buffer,128,"SCOREA%dB%d",state -> getScore(), state -> getScore2());
 			netm -> messageClients(PROTOCOL_TCP, buffer, 128);
 		}
 	}

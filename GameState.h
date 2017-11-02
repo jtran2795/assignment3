@@ -37,6 +37,8 @@ public:
 	void setPaddleHit(bool b);
 	void incrementScore();
 	void incrementScore2();
+	void setScore(int i);
+	void setScore2(int i);
 	void resetScore();
 	void incrementBounces();
 	void resetBounces();

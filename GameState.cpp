@@ -18,6 +18,14 @@ void GameState::incrementScore2()
 {
 	score2++;
 }
+void GameState::setScore(int i)
+{
+	score = i;
+}
+void GameState::setScore2(int i)
+{
+	score2 = i;
+}
 void GameState::incrementBounces()
 {
 	bounces++;
