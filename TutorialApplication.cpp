@@ -445,7 +445,7 @@ void TutorialApplication::gameLoopMP(void) {
 	newBall -> getBody() -> setRestitution(1.0f);
 	float randY = rand()% 1;
 	float randX = (rand()% 1-0.5)*3.0;
-	newBall -> getBody() -> setLinearVelocity(btVector3(randX,randY, 2.0f));
+	newBall -> getBody() -> setLinearVelocity(btVector3(randX,randY, 20.0f));
 	newBall -> setScale(Ogre::Vector3(0.1f,0.1f,0.1f));
 
 	Ogre::Entity* paddleEntity = mSceneMgr->createEntity("paddle", Ogre::SceneManager::PT_CUBE);
@@ -514,22 +514,22 @@ void TutorialApplication::gameLoopMP(void) {
 		{
 			if(netm -> scanForActivity()) {
 				for(int i = 0; i < netm -> udpClientData.size();i++) {
-					std::cout << "Data size: " << netm -> udpClientData.size() << "\n";
+					//std::cout << "Data size: " << netm -> udpClientData.size() << "\n";
 					//std::cout << "Got Client Data" << "\n";
 					if(netm -> udpClientData[i] -> updated) {
 						netm -> udpClientData[i] -> updated = false;
 						//std::cout << "Client Data Is New" << "\n";
 						std::string message(netm -> udpClientData[i] -> output);
-						std::cout << message << "\n";
+						//std::cout << message << "\n";
 						if(message.substr(0,3) == std::string("POS")) {
-							std::cout << "Client Data Is Position Info" << "\n";
+							//std::cout << "Client Data Is Position Info" << "\n";
 							int x = message.find_first_of("X");
 							int y = message.find_first_of("Y");
 							
 
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1).c_str());
-							std::cout << "Y: " << yPos << "\n";
+							//std::cout << "Y: " << yPos << "\n";
 
 							int rotLoc = message.find("ROT");
 							std::string rot = message.substr(rotLoc);
@@ -557,9 +557,9 @@ void TutorialApplication::gameLoopMP(void) {
 			if(!(state -> isGameOver()))
 			{
 				char score_string[32];
-				sprintf(score_string, "Score: %d", state -> getScore());
+				sprintf(score_string, "Your Score: %d", state -> getScore());
 				score->setText(score_string);
-				sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
+				sprintf(score_string, "Their Score: %d", state -> getScore2());
 				hiscore->setText(score_string);
 			}
 			else
@@ -648,8 +648,15 @@ void TutorialApplication::gameLoopMP(void) {
 								if( cooldown >= 60 && !(state -> isGameOver()))
 								{
 									std::cout <<" Out of bounds! \n";
+									if(state -> getPaddleHit())
+									{
+										state -> incrementScore2();
+									}
+									else
+									{
+										state -> incrementScore();
+									}
 									state -> setGameOver(true);
-									
 									break;
 								}
 							}
@@ -684,7 +691,7 @@ void TutorialApplication::gameLoopMP(void) {
 				char score_string[32];
 				sprintf(score_string, "Your Score: %d", state -> getScore());
 				score->setText(score_string);
-				sprintf(score_string, "Their Score: %d", state -> getHiscore());
+				sprintf(score_string, "Their Score: %d", state -> getScore2());
 				hiscore->setText(score_string);
 				}
 				else
@@ -711,7 +718,7 @@ void TutorialApplication::gameLoopMP(void) {
 				btVector3 rot =  paddle2 -> getBody() -> getOrientation().getAxis();
 				snprintf(buffer,128,"POSX%fY%fROTX%fY%fZ%fW%f", paddlePos.x, paddlePos.y,rot.getX(), rot.getY(), rot.getZ(), paddle2 -> getBody() -> getOrientation().getAngle());
 				netm -> messageServer(PROTOCOL_ALL, buffer, 128);
-				std::cout << buffer << "\n";
+				//std::cout << buffer << "\n";
 				
 				polling = 0;
 			}
@@ -816,7 +823,7 @@ void TutorialApplication::gameLoopMP(void) {
 								//sim -> getDynamicsWorld() -> removeRigidBody(rb);
 								if( cooldown >= 60 && !(state -> isGameOver()))
 								{
-									std::cout <<" Out of bounds! \n";
+									//std::cout <<" Out of bounds! \n";
 									//state -> setGameOver(true);
 									
 									break;
@@ -993,7 +1000,17 @@ void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 	rb -> setWorldTransform(tr);
 	float randY = rand() % 1;
 	float randX = (rand() % 1 -0.5)*3.0;
-	rb -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+	if(!single)
+	{
+		if(state -> getPaddleHit())
+		{
+			rb -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+		}
+		else
+		{
+			rb -> setLinearVelocity(btVector3(randX,randY, -20.0f));
+		}
+	}
 	rb -> activate();
 }
 void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
@@ -1006,11 +1023,6 @@ void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
 }
 void TutorialApplication::resetGame(){
 
-	if(!single){
-		char buffer [128];
-		snprintf(buffer,128,"RESET");
-		netm -> messageClients(PROTOCOL_TCP, buffer, 128);
-	}
 	for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
 	{
 		btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
@@ -1047,8 +1059,9 @@ void TutorialApplication::resetGame(){
 	else{
 		if(host){
 			char buffer [128];
-			snprintf(buffer,128,"SCOREA%dB%d",score, );
+			snprintf(buffer,128,"RESETA%dB%d", state -> getScore(), state -> getScore2());
 			netm -> messageClients(PROTOCOL_TCP, buffer, 128);
+			std::cout << buffer << "\n";
 		}
 	}
 	state -> resetBounces();
@@ -1186,7 +1199,7 @@ bool TutorialApplication::collisionHandler(bool wait) {
        					{
        						if(wait == false) // cooldown on physics
 	       					{
-		       					std::cout << snA -> getName() << " " << snB -> getName() << "\n";
+		       					//std::cout << snA -> getName() << " " << snB -> getName() << "\n";
 		       					 if(snA ->getName() == "newFloor" || snB -> getName() == "newFloor")
 		       					 {
 		       					 	//replace with floor sound
@@ -1199,10 +1212,10 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	else {
 		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit())
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
 		       					 	{
 		       					 		state -> incrementScore2();
-		       					 		resetGame();
+		       					 		state -> setGameOver(true);
 		       					 	}
 		       					 	return true;
 		       					 }
@@ -1218,10 +1231,10 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	else {
 		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit())
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
 		       					 	{
 		       					 		state -> incrementScore();
-		       					 		resetGame();
+		       					 		state -> setGameOver(true);
 		       					 	}
 		       					 	return true;
 		       					 }
