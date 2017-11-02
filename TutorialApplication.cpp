@@ -773,6 +773,14 @@ void TutorialApplication::gameLoopMP(void) {
 					netm -> tcpServerData.updated = false;
 					std::string message(netm -> tcpServerData.output);
 						if(message.substr(0,5) == std::string("RESET")) {
+							std::cout << message;
+							int a = message.find_first_of("A");
+							int b = message.find_first_of("B");
+							// flipped scores since other player
+							int score2 = std::atof(message.substr(a+1,b).c_str());
+							int score = std::atof(message.substr(b+1).c_str());
+							state -> setScore(score);
+							state -> setScore2(score2);
 							resetGame();
 						}
 				}
