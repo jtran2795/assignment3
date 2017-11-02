@@ -2,7 +2,9 @@ class GameState
 {
 protected:
 	int score;
+	int score2;
 	bool game_over;
+	bool host_paddle_hit;//TRUE - Host, FALSE - Client
 	int bounces;
 	int hiscore;
 
@@ -12,9 +14,17 @@ public:
 	{
 		return score;
 	}
+	int getScore2() 
+	{
+		return score2;
+	}
 	int getHiscore()
 	{
 		return hiscore;
+	}
+	bool getPaddleHit()
+	{
+		return host_paddle_hit;
 	}
 	bool isGameOver()
 	{
@@ -24,7 +34,9 @@ public:
 	{
 		return bounces;
 	}
+	void setPaddleHit(bool b);
 	void incrementScore();
+	void incrementScore2();
 	void resetScore();
 	void incrementBounces();
 	void resetBounces();

@@ -554,17 +554,18 @@ void TutorialApplication::gameLoopMP(void) {
 			Ogre::WindowEventUtilities::messagePump();
 			sim -> getDynamicsWorld() -> stepSimulation(1.0f/240.0f);
 			// Check that paddle doesn't go out of bounds
-			if(!(state -> isGameOver())){
+			if(!(state -> isGameOver()))
+			{
 				char score_string[32];
 				sprintf(score_string, "Score: %d", state -> getScore());
 				score->setText(score_string);
 				sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
 				hiscore->setText(score_string);
-				}
-				else
-				{
-					score -> setText("Game Over");
-				}
+			}
+			else
+			{
+				resetGame();
+			}
 			
 			Ogre::Vector3 paddlePos = paddle -> getNode() -> getPosition();
 			// if(paddlePos[0] < -100.0f || paddlePos[0] > 100.0f
@@ -681,9 +682,9 @@ void TutorialApplication::gameLoopMP(void) {
 			// Check that paddle doesn't go out of bounds
 			if(!(state -> isGameOver())){
 				char score_string[32];
-				sprintf(score_string, "Score: %d", state -> getScore());
+				sprintf(score_string, "Your Score: %d", state -> getScore());
 				score->setText(score_string);
-				sprintf(score_string, "Hi-Score: %d", state -> getHiscore());
+				sprintf(score_string, "Their Score: %d", state -> getHiscore());
 				hiscore->setText(score_string);
 				}
 				else
@@ -1004,9 +1005,12 @@ void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
 	rb -> activate();
 }
 void TutorialApplication::resetGame(){
-	char buffer [128];
-	snprintf(buffer,128,"RESET");
-	netm -> messageClients(PROTOCOL_TCP, buffer, 128);
+
+	if(!single){
+		char buffer [128];
+		snprintf(buffer,128,"RESET");
+		netm -> messageClients(PROTOCOL_TCP, buffer, 128);
+	}
 	for(int i = 0; i < sim -> getDynamicsWorld() -> getCollisionObjectArray().size(); i++)
 	{
 		btCollisionObject* o = sim -> getDynamicsWorld() -> getCollisionObjectArray()[i];
@@ -1036,9 +1040,18 @@ void TutorialApplication::resetGame(){
 					}
 			}
 	}
-	state -> resetScore();
+	if(single){
+		state -> resetScore();
+		score -> setText("0");
+	}
+	else{
+		if(host){
+			char buffer [128];
+			snprintf(buffer,128,"SCOREA%dB%d",score, );
+			netm -> messageClients(PROTOCOL_TCP, buffer, 128);
+		}
+	}
 	state -> resetBounces();
-	score -> setText("0");
 	cooldown = 0;
 	rotate = 0;
 	state -> setGameOver(false);
@@ -1121,52 +1134,132 @@ bool TutorialApplication::collisionHandler(bool wait) {
 	            btManifoldPoint& pt = contactManifold->getContactPoint(j);
 	                if(snA -> getName() == "newBall" || snB ->getName() == "newBall")
        				{
-       					if(wait == false) 
+       					if (single)
        					{
-	       					std::cout << snA -> getName() << " " << snB -> getName() << "\n";
-	       					 if(snA ->getName() == "newFloor" || snB -> getName() == "newFloor")
-	       					 {
-	       					 	//replace with floor sound
-	       					 	sound -> playChunk("ball.wav");
-	       					 	state -> incrementBounces();
-	       					 	std::cout << state -> getBounces() << "\n";
-	       					 	if(!(state -> isGameOver()) && (state -> getBounces() >= 2))
-	       					 	{
-	       					 		std::cout << "Game Over Double Bounce" << "\n";
-	       					 		state -> setGameOver(true);
-	       					 		score->setText("Game Over");
-	       					 	}
-	       					 	if(snA -> getName() == "newBall" ) {
-	       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
-	       					 	}
-	       					 	else {
-	       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
-	       					 	}
-	       					 	return true;
-	       					 }
-	       					 else if(snA -> getName() == "paddle") 
-	       					 {
-	       					 	if(!(state -> isGameOver())) {state -> incrementScore();}
-	       					 	sound -> playChunk("ball.wav");
-	       					 	//rbB -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
-	       					 }
-	       					 else if(snB -> getName() == "paddle") 
-	       					 {
-	       					 	if(!(state -> isGameOver())) {state -> incrementScore();}
-	       					 	sound -> playChunk("ball.wav");
-	       					 	//rbA -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
-	       					 }
-	       					 else if(snA -> getName() == "newWall") 
-	       					 {
-	       					 	sound -> playChunk("ball.wav");
-	       					 }
-	       					 else if(snB -> getName() == "newWall") 
-	       					 {
-	       					 	sound -> playChunk("ball.wav");
-	       					 }
-	       					 state -> resetBounces();
+       						if(wait == false) // cooldown on physics
+	       					{
+		       					std::cout << snA -> getName() << " " << snB -> getName() << "\n";
+		       					 if(snA ->getName() == "newFloor" || snB -> getName() == "newFloor")
+		       					 {
+		       					 	//replace with floor sound
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> incrementBounces();
+		       					 	std::cout << state -> getBounces() << "\n";
+		       					 	if(!(state -> isGameOver()) && (state -> getBounces() >= 2))
+		       					 	{
+		       					 		std::cout << "Game Over Double Bounce" << "\n";
+		       					 		state -> setGameOver(true);
+		       					 		score->setText("Game Over");
+		       					 	}
+		       					 	if(snA -> getName() == "newBall" ) {
+		       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	else {
+		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	return true;
+		       					 }
+		       					 else if(snA -> getName() == "paddle") 
+		       					 {
+		       					 	if(!(state -> isGameOver())) {state -> incrementScore();}
+		       					 	sound -> playChunk("ball.wav");
+		       					 	//rbB -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snB -> getName() == "paddle") 
+		       					 {
+		       					 	if(!(state -> isGameOver())) {state -> incrementScore();}
+		       					 	sound -> playChunk("ball.wav");
+		       					 	//rbA -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snA -> getName() == "newWall") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 }
+		       					 else if(snB -> getName() == "newWall") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 }
+		       					 state -> resetBounces();
+	       					}
+       					}
+       					else
+       					{
+       						if(wait == false) // cooldown on physics
+	       					{
+		       					std::cout << snA -> getName() << " " << snB -> getName() << "\n";
+		       					 if(snA ->getName() == "newFloor" || snB -> getName() == "newFloor")
+		       					 {
+		       					 	//replace with floor sound
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> incrementBounces();
+		       					 	//std::cout << state -> getBounces() << "\n";
+		       					 	if(snA -> getName() == "newBall" ) {
+		       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	else {
+		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	if(state -> getPaddleHit())
+		       					 	{
+		       					 		state -> incrementScore2();
+		       					 		resetGame();
+		       					 	}
+		       					 	return true;
+		       					 }
+		       					 else if(snA ->getName() == "newFloor2" || snB -> getName() == "newFloor2")
+		       					 {
+		       					 	//replace with floor sound
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> incrementBounces();
+		       					 	//std::cout << state -> getBounces() << "\n";
+		       					 	if(snA -> getName() == "newBall" ) {
+		       					 		rbA -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	else {
+		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 	}
+		       					 	if(state -> getPaddleHit())
+		       					 	{
+		       					 		state -> incrementScore();
+		       					 		resetGame();
+		       					 	}
+		       					 	return true;
+		       					 }
 
-
+		       					 else if(snA -> getName() == "paddle") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> setPaddleHit(1);
+		       					 	//rbB -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snB -> getName() == "paddle") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> setPaddleHit(1);
+		       					 	//rbA -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snA -> getName() == "paddle2") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> setPaddleHit(0);
+		       					 	//rbB -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snB -> getName() == "paddle2") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 	state -> setPaddleHit(0);
+		       					 	//rbA -> applyImpulse(btVector3(0.0f,0.0f,20.0f), btVector3(0.0f,0.0f,0.0f));
+		       					 }
+		       					 else if(snA -> getName() == "newWall") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 }
+		       					 else if(snB -> getName() == "newWall") 
+		       					 {
+		       					 	sound -> playChunk("ball.wav");
+		       					 }
+		       					 state -> resetBounces();
+	       					}
        					}
        					return true;	
        				}
