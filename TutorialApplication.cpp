@@ -735,12 +735,27 @@ void TutorialApplication::gameLoopMP(void) {
 							//std::cout << "Client Data Is Position Info" << "\n";
 							int x = message.find_first_of("X");
 							int y = message.find_first_of("Y");
+							
+
 							float xPos = std::atof(message.substr(x+1,y).c_str());
 							float yPos = std::atof(message.substr(y+1).c_str());
 							//std::cout << "Y: " << yPos << "\n";
+
+							int rotLoc = message.find("ROT");
+							std::string rot = message.substr(rotLoc);
+							x = rot.find_first_of("X");
+							y = rot.find_first_of("Y");
+							int z = rot.find_first_of("Z");
+							int w = rot.find_first_of("W");
+							float xRot = std::atof(rot.substr(x+1,y).c_str());
+							float yRot = std::atof(rot.substr(y+1,z).c_str());
+							float zRot = std::atof(rot.substr(z+1,w).c_str());
+							float angle = std::atof(rot.substr(w+1).c_str());
 							btVector3 trVector(xPos, yPos, paddle -> getNode() -> getPosition().z);
+							btQuaternion newRot(btVector3(xRot,yRot,zRot), angle);
 							btTransform tr = paddle -> getBody() -> getWorldTransform();
 							tr.setOrigin(trVector);
+							tr.setRotation(newRot);
 							paddle -> getBody() -> setWorldTransform(tr);
 						}
 						if(message.substr(0,4) == std::string("BPOS")) {
@@ -1082,6 +1097,7 @@ void TutorialApplication::tickCallBack(btDynamicsWorld *world, btScalar timeStep
 		
 
 	btRigidBody* paddle;
+	btRigidBody* paddle2;
 	btCollisionObjectArray coArray = world -> getCollisionObjectArray();
 	for(int i = 0; i < coArray.size();i++) {
 		void* usrp = coArray[i] -> getUserPointer();
@@ -1092,6 +1108,10 @@ void TutorialApplication::tickCallBack(btDynamicsWorld *world, btScalar timeStep
 			{
 				paddle = btRigidBody::upcast(coArray[i]);
 			}
+			else if(sn -> getName() == "paddle2") 
+			{
+				paddle2 = btRigidBody::upcast(coArray[i]);
+			}
 		}
 	}
 
@@ -1099,37 +1119,73 @@ void TutorialApplication::tickCallBack(btDynamicsWorld *world, btScalar timeStep
 	//paddle -> getMotionState() -> getWorldTransform() -> getRotation()
 
 	//std::cout << "rotate: " << rotate << " val: " << paddle -> getOrientation().getAngle() << "\n";
+	if(single || host) {
+		if(rotate == 1)
+		{
+			if(paddle -> getOrientation().getAngle() >= 1.0f)
+			{
+				paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 6;
+			}
+		} 
+		else if(rotate == 2)
+		{
+			if(paddle -> getOrientation().getAngle() <= 0.0f)
+			{
+				paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 0;
+			}
+		}
+		else if(rotate == 3)
+		{
+			if(paddle -> getOrientation().getAngle() >= 1.0f)
+			{
+				paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 7;
+			}
+		}
+		else if(rotate == 4)
+		{
+			if(paddle -> getOrientation().getAngle() <= 0.0f)
+			{
+				paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 0;
+			}
+		}
+	}
 
-	if(rotate == 1)
-	{
-		if(paddle -> getOrientation().getAngle() >= 1.0f)
+	else if(!single && !host) {
+		if(rotate == 1)
 		{
-			paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
-			rotate = 6;
+			if(paddle2 -> getOrientation().getAngle() >= 1.0f)
+			{
+				paddle2 -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 6;
+			}
+		} 
+		else if(rotate == 2)
+		{
+			if(paddle2 -> getOrientation().getAngle() <= 0.0f)
+			{
+				paddle2 -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 0;
+			}
 		}
-	} 
-	else if(rotate == 2)
-	{
-		if(paddle -> getOrientation().getAngle() <= 0.0f)
+		else if(rotate == 3)
 		{
-			paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
-			rotate = 0;
+			if(paddle2 -> getOrientation().getAngle() >= 1.0f)
+			{
+				paddle2 -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 7;
+			}
 		}
-	}
-	else if(rotate == 3)
-	{
-		if(paddle -> getOrientation().getAngle() >= 1.0f)
+		else if(rotate == 4)
 		{
-			paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
-			rotate = 7;
-		}
-	}
-	else if(rotate == 4)
-	{
-		if(paddle -> getOrientation().getAngle() <= 0.0f)
-		{
-			paddle -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
-			rotate = 0;
+			if(paddle2 -> getOrientation().getAngle() <= 0.0f)
+			{
+				paddle2 -> setAngularVelocity(btVector3(0.0f,0.0f,0.0f));
+				rotate = 0;
+			}
 		}
 	}
 }
@@ -1220,7 +1276,7 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	else {
 		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()) && host)
 		       					 	{
 		       					 		state -> incrementScore2();
 		       					 		state -> setGameOver(true);
@@ -1239,7 +1295,7 @@ bool TutorialApplication::collisionHandler(bool wait) {
 		       					 	else {
 		       					 		rbB -> applyImpulse(btVector3(0.0f,20.0f,0.0f), btVector3(0.0f,0.0f,0.0f));
 		       					 	}
-		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()))
+		       					 	if(state -> getPaddleHit() && !(state -> isGameOver()) && host)
 		       					 	{
 		       					 		state -> incrementScore();
 		       					 		state -> setGameOver(true);
@@ -1464,14 +1520,14 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 		}
 	  	if (arg.key == OIS::KC_SPACE && (rotate == 0 || rotate == 2))
 		{
-			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
 			paddle2 -> getBody() -> activate();
 			rotate = 1;
 			sound -> playChunk("swing.wav");
 		}
 		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 0 || rotate == 4))
 		{
-			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
 			paddle2 -> getBody() -> activate();
 			rotate = 3;
 			sound -> playChunk("swing.wav");
@@ -1574,13 +1630,13 @@ bool TutorialApplication::keyReleased( const OIS::KeyEvent &arg )
 		}
 	  	if (arg.key == OIS::KC_SPACE && (rotate == 1 || rotate == 6))
 		{
-			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
 			paddle2 -> getBody() -> activate();
 			rotate = 2;
 		}
 		if ((arg.key == OIS::KC_RMENU || arg.key == OIS::KC_LMENU ) && (rotate == 3 || rotate == 7))
 		{
-			paddle2 -> getBody() -> setAngularVelocity(btVector3(3.0f,0.0f,0.0f));
+			paddle2 -> getBody() -> setAngularVelocity(btVector3(-3.0f,0.0f,0.0f));
 			paddle2 -> getBody() -> activate();
 			rotate = 4;
 		}
