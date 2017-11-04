@@ -916,12 +916,13 @@ void TutorialApplication::netMenu() {
 	CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
 	CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
 	CEGUI::Window *host = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
-	CEGUI::Window *broadcast = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	//CEGUI::Window *broadcast = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *join = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	joinIP = nwmgr.createWindow("TaharezLook/Editbox", "ipfield");
-	CEGUI::Window *send = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
-	CEGUI::Window *recv = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	//CEGUI::Window *send = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+	//CEGUI::Window *recv = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 	CEGUI::Window *inst1 = nwmgr.createWindow("TaharezLook/Label", "CEGUIDemo/Score");
+	CEGUI::Window *rst_conn= nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
 
 
 
@@ -932,24 +933,28 @@ void TutorialApplication::netMenu() {
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.35, 0)));
 
+	rst_conn->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	rst_conn->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+
+
 	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.5, 0)));
 
 	joinIP->setSize(CEGUI::USize(CEGUI::UDim(0.3, 0), CEGUI::UDim(0.05, 0)));
-	joinIP->setPosition(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim( 0.45, 0)));
+	joinIP->setPosition(CEGUI::UVector2(CEGUI::UDim(0.30, 0), CEGUI::UDim( 0.45, 0)));
 
 
-	broadcast->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	broadcast->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+	//broadcast->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	//broadcast->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
 
-	send->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	send->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
+	//send->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	//send->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.7, 0)));
 
-	recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
+	//recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	//recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
 
-	recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
+	//recv->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	//recv->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.8, 0)));
 
 	host->setText("Host Game");
 	nMenu->addChild(host);
@@ -963,12 +968,16 @@ void TutorialApplication::netMenu() {
 	join->setText("Join Game");
 	nMenu->addChild(join);
 
+	rst_conn->setText("Reset Connection");
+	nMenu->addChild(rst_conn);
+
 	char ip_str[100];
 	sprintf(ip_str, "Your IP is: %s", netm -> getIPstring().c_str());
 
 	inst1->setText(ip_str);
 	ip_string = std::string(ip_str);
 	nMenu->addChild(inst1);
+	//nMenu->addChild(rst_conn);
 
 	// broadcast->setText("UDP Broadcast");
 	// nMenu->addChild(broadcast);
@@ -985,12 +994,21 @@ void TutorialApplication::netMenu() {
 
 	join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::lobbyMenu, this));
 
+	//rst_conn-> subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetConnection, this));
 	//broadcast->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::broadcastUDP, this));
 
 	//send->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::sendMsg, this));
 
 	//recv->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::recvMsg, this));
 
+}
+
+void TutorialApplication::resetConnection() {
+	std::cout << "RESETED CONNECTION\n";
+	netm -> close();
+	netm -> initNetManager();
+	netm -> addNetworkInfo();
+	netm -> startServer();
 }
 
 void TutorialApplication::initHost() {
@@ -1032,19 +1050,35 @@ void TutorialApplication::lobbyMenu() {
 	std::string ip;
 	if(netm -> pollForActivity(5000))
 	{
+		std::cout << "Lobby?\n";
 		//std::cout << netm -> udpClientData.size() << "\n";
 		for(int i = 0; i < 10; i++)
 		{
 			if(strcmp(netm -> udpServerData[i].output,"") != 1)
 			{
-				ip = std::string(netm -> udpServerData[i].output);
-				ip = ip.substr(STR_OPEN.length(), (joinIP -> getText()).length());
-				std::cout << ip << "\n";
-				if(ip != joinIP -> getText())
+				if(!(netm -> udpServerData[i].updated))
 				{
 					continue;
 				}
-				netm -> joinMultiPlayer(netm -> udpServerData[i].output);
+				netm -> udpServerData[i].updated = false;
+				ip = std::string(netm -> udpServerData[i].output);
+				if(ip.length() == 0)
+				{
+					continue;
+				}
+				ip = ip.substr(STR_OPEN.length(), joinIP -> getText().length());
+				std::cout << ip << "\n";
+				std::cout << joinIP -> getText() << "\n";
+				if(ip != joinIP -> getText())
+				{
+					std::cout << "wrong IP \n";
+					continue;
+				}
+				if(!netm -> joinMultiPlayer(netm -> udpServerData[i].output))
+				{
+					netm -> startServer();
+					return;
+				}
 				sendMessage();
 				if(netm -> pollForActivity(5000))
 				{

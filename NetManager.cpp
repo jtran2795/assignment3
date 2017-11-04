@@ -426,7 +426,6 @@ void NetManager::dropClient(Protocol protocol, Uint32 host) {
  */
 void NetManager::stopServer(Protocol protocol) {
   int i;
-
   if (statusCheck(NET_SERVER)) {
     printError("NetManager: There's no server running, dummy.");
     return;
@@ -447,9 +446,11 @@ void NetManager::stopServer(Protocol protocol) {
     }
   }
 
+  //::cout << netServer.protocols << " " << protocol << " " << PROTOCOL_UDP << "\n";
   if (netServer.protocols & PROTOCOL_UDP & protocol) {
     for (i = udpSockets.size() - 1; i > 0; i--) {
       unwatchSocket(udpSockets[i]);
+      //std::cout << "Closing sockets\n";
       closeUDP(udpSockets[i]);
       udpSockets.pop_back();
     }
@@ -893,6 +894,7 @@ bool NetManager::openUDPSocket(Uint16 port) {
     printError("SDL_net: Failed to open UDP socket!");
     ret = false;
   } else {
+    //std::cout << "PUSHED A UDP SOCKET BACK ******\n";
     udpSockets.push_back(udpSock);
     watchSocket(udpSock);
 

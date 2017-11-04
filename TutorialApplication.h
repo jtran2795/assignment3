@@ -63,6 +63,7 @@ protected:
   void lobbyMenu(void);
   void checkMessages();
   void sendMessage();
+  void resetConnection();
   void broadcastUDP(void);
   void sendMsg(void);
   void recvMsg(void);
