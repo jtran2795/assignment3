@@ -65,7 +65,7 @@ protected:
   void sendMessage();
   void resetConnection();
   void broadcastUDP(void);
-  void sendMsg(void);
+  void quitGame(void);
   void recvMsg(void);
 };
 

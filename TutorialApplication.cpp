@@ -933,8 +933,8 @@ void TutorialApplication::netMenu() {
 	host->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 	host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.35, 0)));
 
-	rst_conn->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-	rst_conn->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
+	//rst_conn->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+	//rst_conn->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim( 0.6, 0)));
 
 
 	join->setSize(CEGUI::USize(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
@@ -969,7 +969,7 @@ void TutorialApplication::netMenu() {
 	nMenu->addChild(join);
 
 	rst_conn->setText("Reset Connection");
-	nMenu->addChild(rst_conn);
+	//nMenu->addChild(rst_conn);
 
 	char ip_str[100];
 	sprintf(ip_str, "Your IP is: %s", netm -> getIPstring().c_str());
@@ -1076,7 +1076,21 @@ void TutorialApplication::lobbyMenu() {
 				}
 				if(!netm -> joinMultiPlayer(netm -> udpServerData[i].output))
 				{
-					netm -> startServer();
+					CEGUI::WindowManager &nwmgr = CEGUI::WindowManager::getSingleton();
+					CEGUI::Window *nMenu = nwmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet2");
+					CEGUI::Window *inst1 = nwmgr.createWindow("TaharezLook/Label", "CEGUIDemo/Score");
+					CEGUI::Window *inst2 = nwmgr.createWindow("TaharezLook/Button", "CEGUIDemo/Score");
+									
+					inst1->setSize(CEGUI::USize(CEGUI::UDim(0.5, 0), CEGUI::UDim(0.05, 0)));
+					inst1->setPosition(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim( 0.45, 0)));
+					inst2->setSize(CEGUI::USize(CEGUI::UDim(0.5, 0), CEGUI::UDim(0.05, 0)));
+					inst2->setPosition(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim( 0.55, 0)));
+					inst1->setText("Connection Error: Please relaunch the application.");
+					inst2->setText("Quit");
+					nMenu->addChild(inst1);
+					nMenu->addChild(inst2);
+					CEGUI::System::getSingleton( ).getDefaultGUIContext().setRootWindow(nMenu);
+					inst2->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::quitGame, this));
 					return;
 				}
 				sendMessage();
@@ -1103,12 +1117,6 @@ void TutorialApplication::broadcastUDP() {
 	std::cout << netm -> getPort() << "\n";
 	netm -> broadcastUDPInvitation(1);
 }
-
-void TutorialApplication::sendMsg() {
-	const char* buf = "Testing";
-	netm -> messageClients(PROTOCOL_ALL, buf, strlen(buf));
-}
-
 void TutorialApplication::recvMsg() {
 	if(netm -> scanForActivity()) {
 		std::cout << "Got Message" << "\n";
@@ -1116,6 +1124,11 @@ void TutorialApplication::recvMsg() {
 	else {
 		std::cout << "No Messages Received" << "\n";
 	}
+}
+
+void TutorialApplication::quitGame() {
+	quitSDL();
+    mShutDown = true;
 }
 
 void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
