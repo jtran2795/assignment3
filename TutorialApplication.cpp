@@ -509,7 +509,7 @@ void TutorialApplication::gameLoopMP(void) {
 	if(host)
 	{
 		score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
-		mCamera->setPosition(Ogre::Vector3(0, 100, -150));
+		mCamera->setPosition(Ogre::Vector3(0, 100, -200));
 		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
 		int polling = 0;
 		while(true)
@@ -1104,6 +1104,9 @@ void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 			rb -> setLinearVelocity(btVector3(randX,randY, -20.0f));
 		}
 	}
+	else {
+		rb -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+	}
 	rb -> activate();
 }
 void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
@@ -1539,7 +1542,7 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 	if (arg.key == OIS::KC_M) {
  		sound -> muteSound();
  	}
- 	if(host)
+ 	if(host || single)
  	{
 		std:: deque<GameObject*> objList = sim -> getObjList();
 		GameObject* paddle = NULL;
@@ -1677,7 +1680,7 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 bool TutorialApplication::keyReleased( const OIS::KeyEvent &arg )
 {
 
-	if(host)
+	if(host || single)
 	{
 		std:: deque<GameObject*> objList = sim -> getObjList();
 		GameObject* paddle = NULL;
