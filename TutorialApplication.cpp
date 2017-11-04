@@ -153,7 +153,7 @@ void TutorialApplication::gameLoop(void) {
 	createWalls();
 
 	Ogre::Entity* floor_plane = mSceneMgr->createEntity("floor");
-	Ogre::Entity* north_plane = mSceneMgr->createEntity("north");
+	Ogre::Entity* north_plane = mSceneMgr->createEntity("north2");
 
 	floor_plane->setMaterialName("WoodPallet");
 	//Ogre::SceneNode* floor_plane_node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -509,7 +509,7 @@ void TutorialApplication::gameLoopMP(void) {
 	if(host)
 	{
 		score->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&TutorialApplication::resetGame, this));
-		mCamera->setPosition(Ogre::Vector3(0, 100, -150));
+		mCamera->setPosition(Ogre::Vector3(0, 100, -200));
 		mCamera->lookAt(Ogre::Vector3(0, 0, 50));
 		int polling = 0;
 		while(true)
@@ -1138,6 +1138,9 @@ void TutorialApplication::resetBall(Ogre::SceneNode *sn, btRigidBody *rb)
 			rb -> setLinearVelocity(btVector3(randX,randY, -20.0f));
 		}
 	}
+	else {
+		rb -> setLinearVelocity(btVector3(randX,randY, 20.0f));
+	}
 	rb -> activate();
 }
 void TutorialApplication::resetPaddle(Ogre::SceneNode *sn, btRigidBody *rb){
@@ -1573,7 +1576,7 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 	if (arg.key == OIS::KC_M) {
  		sound -> muteSound();
  	}
- 	if(host)
+ 	if(host || single)
  	{
 		std:: deque<GameObject*> objList = sim -> getObjList();
 		GameObject* paddle = NULL;
@@ -1711,7 +1714,7 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg )
 bool TutorialApplication::keyReleased( const OIS::KeyEvent &arg )
 {
 
-	if(host)
+	if(host || single)
 	{
 		std:: deque<GameObject*> objList = sim -> getObjList();
 		GameObject* paddle = NULL;
@@ -1862,6 +1865,16 @@ void TutorialApplication::createWalls(void)
 			Ogre::Vector3::UNIT_Z); //up vector
 
 	plane = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
+
+	Ogre::MeshManager::getSingleton().createPlane(
+		"north2",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		plane, 
+		100, 100,
+		2, 2, 
+		true, 
+		1, 5, 5, 
+		Ogre::Vector3::UNIT_X);
 
 	Ogre::MeshManager::getSingleton().createPlane(
 		"north",
